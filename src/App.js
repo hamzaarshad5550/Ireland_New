@@ -1418,8 +1418,8 @@ More info: https://www.autoaddress.com/ | https://www.eircode.ie/business/addres
       </header>
 
       {/* Booking Form */}
-      <section className="py-16">
-        <div className="max-w-[1600px] mx-auto px-4">
+      <section className="py-8 sm:py-12 md:py-16">
+        <div className="max-w-[1600px] mx-auto px-4 sm:px-6">
           <div className="text-center mb-12">
             <h2 className="text-3xl font-bold text-gray-900 mb-4">Book Your Consultation</h2>
             <p className="text-gray-600">Get professional medical care in just two simple steps</p>
@@ -1442,7 +1442,7 @@ More info: https://www.autoaddress.com/ | https://www.eircode.ie/business/addres
             <div className="bg-white rounded-2xl shadow-xl overflow-hidden">
               <div className="grid md:grid-cols-2 gap-0">
                 {/* Patient Information */}
-                <div className="p-8 border-r border-gray-100">
+                <div className="p-4 sm:p-6 md:p-8 border-r-0 md:border-r border-gray-100 border-b md:border-b-0">
                   <div className="flex items-center space-x-2 mb-6">
                     <Users className={theme.accent} size={20} />
                     <h3 className="text-xl font-semibold text-gray-900">Patient Information</h3>
@@ -1460,7 +1460,7 @@ More info: https://www.autoaddress.com/ | https://www.eircode.ie/business/addres
                         value={formData.reasonForContact}
                         onChange={handleInputChange}
                         required
-                        className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all bg-white"
+                        className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all bg-white text-base"
                       >
                         <option value="">Select reason for contact</option>
                         <option value="general_consultation">General Consultation</option>
@@ -1524,7 +1524,7 @@ More info: https://www.autoaddress.com/ | https://www.eircode.ie/business/addres
                           value={formData.gender}
                           onChange={handleInputChange}
                           required
-                          className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all bg-white"
+                          className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all bg-white text-base"
                           disabled={isLoadingDropdowns}
                         >
                           <option value="">
@@ -1602,7 +1602,7 @@ More info: https://www.autoaddress.com/ | https://www.eircode.ie/business/addres
                           value={formData.gp}
                           onChange={handleInputChange}
                           required
-                          className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all bg-white"
+                          className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all bg-white text-base"
                           disabled={isLoadingDropdowns}
                         >
                           <option value="">
@@ -1628,7 +1628,7 @@ More info: https://www.autoaddress.com/ | https://www.eircode.ie/business/addres
                           value={formData.surgery}
                           onChange={handleInputChange}
                           required
-                          className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all bg-white"
+                          className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all bg-white text-base"
                           disabled={isLoadingDropdowns}
                         >
                           <option value="">
@@ -1723,19 +1723,19 @@ More info: https://www.autoaddress.com/ | https://www.eircode.ie/business/addres
                   <div className="flex justify-between items-center py-4">
                     <h3 className="text-xl font-semibold text-gray-900">Home Location</h3>
 
-                    <label className="flex items-center space-x-3 cursor-pointer">
+                    <label className="flex items-center space-x-2 sm:space-x-3 cursor-pointer">
                       <input
                         type="checkbox"
-                        className="form-checkbox h-6 w-6 text-blue-600"
+                        className="form-checkbox h-4 w-4 sm:h-5 sm:w-5 md:h-6 md:w-4 text-blue-600"
                         checked={useHomeAsCurrentLocation}
                         onChange={handleUseHomeAsCurrentLocation}
                       />
-                      <span className="text-xl font-semibold text-gray-900">Set as Current Location</span>
+                      <span className="text-sm sm:text-base md:text-lg font-semibold text-gray-900">Set as Current Location</span>
                     </label>
                   </div>
                   {/* Manual Location Fields */}
                   <div className="space-y-4">
-                    <div className="grid grid-cols-2 gap-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
 
                       <div>
                         <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -1764,7 +1764,7 @@ More info: https://www.autoaddress.com/ | https://www.eircode.ie/business/addres
                         />
                       </div>
                     </div>
-                    <div className="grid grid-cols-2 gap-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                       <div>
                         <label className="block text-sm font-medium text-gray-700 mb-2">City</label>
                         <input
@@ -1807,7 +1807,7 @@ More info: https://www.autoaddress.com/ | https://www.eircode.ie/business/addres
 
                   {/* Manual Location Fields */}
                   <div className="space-y-4">
-                    <div className="grid grid-cols-2 gap-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
 
                       <div>
                         <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -1838,7 +1838,7 @@ More info: https://www.autoaddress.com/ | https://www.eircode.ie/business/addres
                         />
                       </div>
                     </div>
-                    <div className="grid grid-cols-2 gap-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                       <div>
                         <label className="block text-sm font-medium text-gray-700 mb-2">City</label>
                         <input
@@ -1884,7 +1884,7 @@ More info: https://www.autoaddress.com/ | https://www.eircode.ie/business/addres
               </div>
 
               {/* Continue Button */}
-              <div className="p-8 bg-white border-t border-gray-100">
+              <div className="p-4 sm:p-6 md:p-8 bg-white border-t border-gray-100">
                 <button
                   onClick={() => setCurrentStep(2)}
                   className={`w-full ${theme.primarySolid} ${theme.primaryHover} text-white py-4 rounded-lg font-semibold text-lg transition-colors`}
@@ -1896,7 +1896,7 @@ More info: https://www.autoaddress.com/ | https://www.eircode.ie/business/addres
           ) : (
             // Step 2: Clinic Selection & Payment
             <div className="bg-white rounded-2xl shadow-xl overflow-hidden">
-              <div className="p-8">
+              <div className="p-4 sm:p-6 md:p-8">
                 <div className="flex items-center space-x-2 mb-6">
                   {isVirtualAppointment() ? (
                     <Video className={theme.accent} size={20} />
@@ -1927,7 +1927,7 @@ More info: https://www.autoaddress.com/ | https://www.eircode.ie/business/addres
                       value={formData.appointmentType}
                       onChange={handleInputChange}
                       required
-                      className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all bg-white"
+                      className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all bg-white text-base"
                       disabled={isLoadingDropdowns}
                     >
                       <option value="">
@@ -1985,12 +1985,12 @@ More info: https://www.autoaddress.com/ | https://www.eircode.ie/business/addres
 
                 {/* Clinics Grid - Only show for face-to-face appointments */}
                 {!isVirtualAppointment() && (
-                  <div className="grid grid-cols-5 gap-3 mb-6">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3 mb-6">
                     {clinics.map((clinic) => (
                       <div
                         key={clinic.id}
                         onClick={() => handleClinicSelect(clinic)}
-                        className={`p-3 border-2 rounded-lg cursor-pointer transition-all hover:shadow-md ${selectedClinic?.id === clinic.id
+                        className={`p-3 sm:p-4 border-2 rounded-lg cursor-pointer transition-all hover:shadow-md min-h-[80px] ${selectedClinic?.id === clinic.id
                           ? `${theme.border} ${theme.accentBg}`
                           : 'border-gray-200 hover:border-gray-300'
                           }`}
@@ -2022,12 +2022,12 @@ More info: https://www.autoaddress.com/ | https://www.eircode.ie/business/addres
                         : `Available Time Slots for ${selectedClinic.name}:`
                       }
                     </h4>
-                    <div className="grid grid-cols-6 gap-3">
+                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3">
                       {getAvailableTimeSlots().map((slot, index) => (
                         <button
                           key={index}
                           onClick={() => handleSlotSelect(slot)}
-                          className={`p-3 border-2 rounded-lg text-sm font-medium transition-all ${selectedSlot === slot
+                          className={`p-3 sm:p-4 border-2 rounded-lg text-sm font-medium transition-all min-h-[44px] ${selectedSlot === slot
                             ? `${theme.primarySolid} text-white`
                             : 'border-gray-200 text-gray-700 hover:border-blue-300 hover:bg-blue-50'
                             }`}
@@ -2042,123 +2042,92 @@ More info: https://www.autoaddress.com/ | https://www.eircode.ie/business/addres
 
                 {/* Payment and Booking Summary - Side by Side Layout */}
                 {((isVirtualAppointment() && selectedSlot) || (selectedClinic && selectedSlot)) && (
-                  <div className="grid md:grid-cols-2 gap-8 pt-6">
+                  <div className="grid md:grid-cols-2 gap-4 md:gap-8 pt-6">
                     {/* Left Side - Payment Information */}
-                    <div className="space-y-6">
-                      <div className="flex items-center space-x-2 mb-4">
+                    <div className="bg-white border border-gray-200 rounded-lg p-4 sm:p-6">
+                      <div className="flex items-center space-x-2 mb-6">
                         <div className={`w-8 h-8 ${theme.accentBg} rounded-full flex items-center justify-center`}>
                           <span className={`text-sm font-semibold ${theme.accent}`}>💳</span>
                         </div>
                         <h4 className="text-lg font-semibold text-gray-900">Payment Information</h4>
                       </div>
 
-                      <div className="bg-white border border-gray-200 rounded-lg p-6">
-                        <div className="mb-4">
-                          <div className="flex justify-between items-center mb-2">
-                            <span className="text-sm font-medium text-gray-700">Consultation Fee:</span>
-                            <span className="text-lg font-bold text-gray-900">€{paymentAmount}</span>
-                          </div>
+                      <div className="mb-6">
+                        <div className="flex justify-between items-center mb-4">
+                          <span className="text-sm font-medium text-gray-700">Consultation Fee:</span>
+                          <span className="text-lg font-bold text-gray-900">€{paymentAmount}</span>
                         </div>
-
-                        <Elements stripe={stripePromise} options={{ appearance: STRIPE_CONFIG.APPEARANCE }}>
-                          <StripePayment
-                            amount={paymentAmount}
-                            onPaymentSuccess={handlePaymentSuccess}
-                            onPaymentError={handlePaymentError}
-                            isProcessing={isProcessingPayment}
-                            setIsProcessing={setIsProcessingPayment}
-                            bookingData={formData}
-                          />
-                        </Elements>
                       </div>
+
+                      <Elements stripe={stripePromise} options={{ appearance: STRIPE_CONFIG.APPEARANCE }}>
+                        <StripePayment
+                          amount={paymentAmount}
+                          onPaymentSuccess={handlePaymentSuccess}
+                          onPaymentError={handlePaymentError}
+                          isProcessing={isProcessingPayment}
+                          setIsProcessing={setIsProcessingPayment}
+                          bookingData={formData}
+                        />
+                      </Elements>
                     </div>
 
                     {/* Right Side - Booking Summary */}
-                    <div className="space-y-6">
-                      <div className="flex items-center space-x-2 mb-4">
-                        <div className={`w-8 h-8 ${theme.accentBg} rounded-full flex items-center justify-center`}>
-                          <span className={`text-sm font-semibold ${theme.accent}`}>📋</span>
-                        </div>
+                    <div className={`p-4 sm:p-6 rounded-lg ${theme.accentBg} border border-gray-200`}>
+                      <div className="flex items-center space-x-2 mb-6">
+                        
                         <h4 className="text-lg font-semibold text-gray-900">Booking Summary</h4>
                       </div>
 
-                      <div className={`p-6 rounded-lg ${theme.accentBg} border border-gray-200`}>
-                        <div className="space-y-4 text-sm text-gray-700">
-                          <div className="flex justify-between items-center">
-                            <span className="font-medium">Type:</span>
-                            <span className="text-gray-900">{getAppointmentTypeDisplay()}</span>
+                      <div className="space-y-3 text-sm text-gray-600 mb-6">
+                        <p>📋 Type: {getAppointmentTypeDisplay()}</p>
+                        {!isVirtualAppointment() && selectedClinic && (
+                          <p>🏥 Clinic: {selectedClinic.name}</p>
+                        )}
+                        <p>🕐 Time: {selectedSlot}</p>
+                        <p>👤 Patient: {formData.fullName || `${formData.firstName} ${formData.lastName}`.trim() || 'Not specified'}</p>
+                        <p>📧 Email: {formData.email || 'Not specified'}</p>
+                        <p>📞 Phone: {formData.phoneNumber || 'Not specified'}</p>
+
+                        {isVirtualAppointment() && (
+                          <div className="mt-4 p-3 bg-blue-50 rounded-lg">
+                            <p className="text-blue-700 font-medium text-sm">
+                              {formData.appointmentType === 'vc'
+                                ? '💻 Video link will be sent to your email'
+                                : '📞 You will receive a call at the scheduled time'
+                              }
+                            </p>
                           </div>
+                        )}
+                      </div>
 
-                          {!isVirtualAppointment() && selectedClinic && (
-                            <div className="flex justify-between items-center">
-                              <span className="font-medium">Clinic:</span>
-                              <span className="text-gray-900">{selectedClinic.name}</span>
-                            </div>
-                          )}
-
-                          <div className="flex justify-between items-center">
-                            <span className="font-medium">Time:</span>
-                            <span className="text-gray-900">{selectedSlot}</span>
-                          </div>
-
-                          <div className="flex justify-between items-center">
-                            <span className="font-medium">Patient:</span>
-                            <span className="text-gray-900">
-                              {formData.fullName || `${formData.firstName} ${formData.lastName}`.trim() || 'Not specified'}
-                            </span>
-                          </div>
-
-                          <div className="flex justify-between items-center">
-                            <span className="font-medium">Email:</span>
-                            <span className="text-gray-900">{formData.email || 'Not specified'}</span>
-                          </div>
-
-                          <div className="flex justify-between items-center">
-                            <span className="font-medium">Phone:</span>
-                            <span className="text-gray-900">{formData.phoneNumber || 'Not specified'}</span>
-                          </div>
-
-                          {isVirtualAppointment() && (
-                            <div className="mt-4 p-3 bg-blue-50 rounded-lg">
-                              <p className="text-blue-700 font-medium text-sm">
-                                {formData.appointmentType === 'vc'
-                                  ? '💻 Video link will be sent to your email'
-                                  : '📞 You will receive a call at the scheduled time'
-                                }
-                              </p>
-                            </div>
-                          )}
+                      <div className="pt-4 border-t border-gray-200">
+                        <div className="flex justify-between items-center">
+                          <span className="text-lg font-semibold text-gray-900">Total:</span>
+                          <span className={`text-2xl font-bold ${theme.accent}`}>
+                            €{paymentAmount}
+                          </span>
                         </div>
 
-                        <div className="mt-6 pt-4 border-t border-gray-300">
-                          <div className="flex justify-between items-center">
-                            <span className="text-lg font-semibold text-gray-900">Total:</span>
-                            <span className={`text-2xl font-bold ${theme.accent}`}>
-                              €{paymentAmount}
-                            </span>
+                        {paymentSuccess && (
+                          <div className="mt-3 flex items-center space-x-2 text-green-600">
+                            <Check className="h-4 w-4" />
+                            <span className="text-sm font-medium">Payment Completed</span>
                           </div>
+                        )}
 
-                          {paymentSuccess && (
-                            <div className="mt-3 flex items-center space-x-2 text-green-600">
-                              <Check className="h-4 w-4" />
-                              <span className="text-sm font-medium">Payment Completed</span>
-                            </div>
-                          )}
-
-                          {paymentError && (
-                            <div className="mt-3 text-red-600 text-sm">
-                              Payment failed: {paymentError}
-                            </div>
-                          )}
-                        </div>
+                        {paymentError && (
+                          <div className="mt-3 text-red-600 text-sm">
+                            Payment failed: {paymentError}
+                          </div>
+                        )}
                       </div>
                     </div>
                   </div>
                 )}
 
                 {/* Action Buttons */}
-                <div className="p-8 bg-white border-t border-gray-100">
-                  <div className="flex space-x-4">
+                <div className="p-4 sm:p-6 md:p-8 bg-white border-t border-gray-100">
+                  <div className="flex flex-col sm:flex-row space-y-3 sm:space-y-0 sm:space-x-4">
                     <button
                       onClick={() => setCurrentStep(1)}
                       className="flex-1 px-6 py-4 border-2 border-gray-200 text-gray-700 rounded-lg font-semibold hover:bg-gray-50 transition-colors"
