@@ -224,18 +224,43 @@ html {
     background-size: 1.25em 1.25em !important;
     padding-right: 2.5rem !important;
   }
-  
+
   /* Fix date input on mobile */
   input[type="date"] {
     -webkit-appearance: none !important;
     -moz-appearance: textfield !important;
     min-height: 44px !important;
   }
-  
+
   /* Ensure navigation buttons are properly sized on mobile */
   .date-nav-button {
     min-width: 44px !important;
     min-height: 44px !important;
+  }
+
+  /* Phone number input mobile fixes */
+  .phone-input-container {
+    width: 100% !important;
+    max-width: 100% !important;
+  }
+
+  /* Ensure phone input fields align properly */
+  .phone-input-container .flex {
+    align-items: stretch !important;
+  }
+
+  /* Fix phone input field heights on mobile */
+  .phone-input-container input[type="tel"],
+  .phone-input-container button {
+    height: 48px !important;
+    min-height: 48px !important;
+  }
+
+  /* Ensure dropdown doesn't overflow viewport */
+  .phone-dropdown {
+    max-width: calc(100vw - 2rem) !important;
+    left: 0 !important;
+    right: auto !important;
   }
 }
 

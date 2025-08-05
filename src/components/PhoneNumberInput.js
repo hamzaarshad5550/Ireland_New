@@ -92,7 +92,8 @@ const PhoneNumberInput = ({
   error = null,
   placeholder = "Enter phone number",
   className = "",
-  required = false
+  required = false,
+  focusColor = "blue"
 }) => {
   const [selectedCountry, setSelectedCountry] = useState('IE'); // Default to Ireland
   const [phoneNumber, setPhoneNumber] = useState('');
@@ -219,27 +220,32 @@ const PhoneNumberInput = ({
   const displayError = error || validationError;
 
   return (
-    <div className={`relative w-full ${className}`}>
-      <div className="flex w-full">
-        {/* Country Code Dropdown - Responsive */}
+    <div className={`relative w-full phone-input-container ${className}`}>
+      <div className="flex w-full items-stretch">
+        {/* Country Code Dropdown - Mobile Responsive */}
         <div className="relative flex-shrink-0" ref={dropdownRef}>
             <button
               type="button"
               onClick={() => setIsDropdownOpen(!isDropdownOpen)}
               disabled={disabled}
-              className={`flex items-center space-x-1 sm:space-x-2 px-3 py-2.5 sm:py-3 border border-r-0 rounded-l-lg bg-white hover:bg-gray-50 focus:ring-2 focus:ring-ring focus:border-ring transition-all min-h-[50px] h-[44px] sm:h-auto ${
+              className={`flex items-center justify-between px-2 sm:px-3 py-3 border border-r-0 rounded-l-lg bg-white hover:bg-gray-50 focus:ring-2 focus:ring-${focusColor}-500 focus:border-${focusColor}-500 transition-all h-[48px] w-auto min-w-[120px] sm:min-w-[140px] ${
                 disabled ? 'bg-gray-100 cursor-not-allowed' : 'cursor-pointer'
-              } ${displayError ? 'border-red-500' : 'border-input'}`}
+              } ${displayError ? 'border-red-500' : `border-${focusColor}-300`}`}
             >
-              <span className="text-xs sm:text-sm font-medium text-gray-700 flex-shrink-0">
-                {selectedCountryData?.name || 'Ireland'} {selectedCountryData?.callingCode || '+353'}
-              </span>
-              <ChevronDown size={16} className="text-gray-400 flex-shrink-0" />
+              <div className="flex items-center space-x-1 overflow-hidden">
+                <span className="text-xs sm:text-sm font-medium text-gray-700 truncate">
+                  {selectedCountryData?.callingCode || '+353'}
+                </span>
+                <span className="hidden sm:inline text-xs text-gray-500 truncate">
+                  {selectedCountryData?.name || 'Ireland'}
+                </span>
+              </div>
+              <ChevronDown size={14} className="text-gray-400 flex-shrink-0 ml-1" />
             </button>
 
-            {/* Dropdown Menu */}
+            {/* Dropdown Menu - Mobile Optimized */}
             {isDropdownOpen && (
-              <div className="absolute top-full left-0 z-50 bg-white border border-gray-200 rounded-lg shadow-lg mt-1 max-h-64 overflow-hidden w-full min-w-[280px] sm:min-w-[320px] md:min-w-[320px]">
+              <div className="absolute top-full left-0 z-[9999] bg-white border border-gray-200 rounded-lg shadow-lg mt-1 max-h-64 overflow-hidden w-[280px] sm:w-[320px] max-w-[90vw] phone-dropdown">
                 {/* Search Input */}
                 <div className="p-3 border-b border-gray-100">
                   <div className="relative">
@@ -249,7 +255,7 @@ const PhoneNumberInput = ({
                       placeholder="Search countries..."
                       value={searchTerm}
                       onChange={(e) => setSearchTerm(e.target.value)}
-                      className="w-full pl-9 pr-3 py-2.5 border border-input rounded-md focus:ring-2 focus:ring-ring focus:border-ring text-sm"
+                      className={`w-full pl-9 pr-3 py-2.5 border border-${focusColor}-300 rounded-md focus:ring-2 focus:ring-${focusColor}-500 focus:border-${focusColor}-500 text-sm`}
                     />
                   </div>
                 </div>
@@ -264,7 +270,7 @@ const PhoneNumberInput = ({
                         onClick={() => handleCountrySelect(country)}
                         className="w-full flex items-center justify-between px-4 py-3 hover:bg-gray-50 focus:bg-gray-50 text-left transition-colors border-b border-gray-50 last:border-b-0"
                       >
-                        <span className="flex-1 text-sm text-gray-900">{country.name}</span>
+                        <span className="flex-1 text-sm text-gray-900 truncate pr-2">{country.name}</span>
                         <span className="text-sm text-gray-500 flex-shrink-0">{country.callingCode}</span>
                       </button>
                     ))
@@ -278,7 +284,7 @@ const PhoneNumberInput = ({
             )}
           </div>
 
-        {/* Phone Number Input - Responsive */}
+        {/* Phone Number Input - Mobile Responsive */}
         <input
           ref={inputRef}
           type="tel"
@@ -287,9 +293,9 @@ const PhoneNumberInput = ({
           placeholder={placeholder}
           disabled={disabled}
           required={required}
-          className={`flex-1 w-full px-3 py-2.5 sm:py-3 border rounded-r-lg focus:ring-2 focus:ring-ring focus:border-ring transition-all text-sm sm:text-base min-h-[44px] h-[44px] sm:h-auto ${
+          className={`flex-1 w-full px-3 py-3 border rounded-r-lg focus:ring-2 focus:ring-${focusColor}-500 focus:border-${focusColor}-500 transition-all text-sm sm:text-base h-[48px] ${
             disabled ? 'bg-gray-100 cursor-not-allowed' : ''
-          } ${displayError ? 'border-red-500 bg-red-50' : 'border-input'}`}
+          } ${displayError ? 'border-red-500 bg-red-50' : `border-${focusColor}-300`}`}
         />
       </div>
 
