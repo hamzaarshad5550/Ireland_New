@@ -1209,17 +1209,36 @@ export default function CareHQBooking() {
   const getClinicsData = () => {
     if (treatmentCentres.length > 0) {
       // Transform treatment centres data to match expected clinic structure
-      return treatmentCentres.map((centre, index) => ({
-        id: centre.TrCenterID || index + 1,
-        name: centre.TrCentreName || 'Unknown Centre',
-        distance: centre.DistanceKMs ? `${centre.DistanceKMs} km` : 'N/A',
-        direction: centre.Direction || 'No directions available',
-        address: centre.Address || '',
-        price: `€${paymentAmount}`, // Use the payment amount from AdvPayment
-        advancePayment: `€${paymentAmount}`,
-        advancePaymentValue: paymentAmount,
-        rating: 4.8
-      }));
+      return treatmentCentres.map((centre, index) => {
+        // Extract dynamic price from centre data or use default
+        let clinicPrice = paymentAmount; // Default fallback
+        let priceDisplay = `€${paymentAmount}`;
+
+        // Check for AdvPayment in centre data
+        if (centre.AdvPayment) {
+          if (typeof centre.AdvPayment === 'string') {
+            // Extract numeric value from string like "€ 20"
+            const numericValue = parseInt(centre.AdvPayment.replace(/[^0-9]/g, '')) || paymentAmount;
+            clinicPrice = numericValue;
+            priceDisplay = centre.AdvPayment;
+          } else if (typeof centre.AdvPayment === 'number') {
+            clinicPrice = centre.AdvPayment;
+            priceDisplay = `€${centre.AdvPayment}`;
+          }
+        }
+
+        return {
+          id: centre.TrCenterID || index + 1,
+          name: centre.TrCentreName || 'Unknown Centre',
+          distance: centre.DistanceKMs ? `${centre.DistanceKMs} km` : 'N/A',
+          direction: centre.Direction || 'No directions available',
+          address: centre.Address || '',
+          price: priceDisplay, // Dynamic price from webhook response
+          advancePayment: priceDisplay,
+          advancePaymentValue: clinicPrice,
+          rating: 4.8
+        };
+      });
     }
 
     // Return empty array if no treatment centres available (don't use dummy data)
@@ -2653,6 +2672,12 @@ export default function CareHQBooking() {
     } else {
       setSelectedClinic(clinic);
       setSelectedSlot(null);
+
+      // Update payment amount with clinic-specific price
+      if (clinic.advancePaymentValue && !isVirtualAppointment()) {
+        console.log('💰 Updating payment amount for selected clinic:', clinic.advancePaymentValue);
+        setPaymentAmount(clinic.advancePaymentValue);
+      }
 
       // Fetch appointment slots for the selected clinic (only if not already loading or loaded)
       if (clinic && clinic.id && !isLoadingSlots && !appointmentSlots[clinic.id]) {
@@ -4806,6 +4831,17 @@ const handleContinueToBooking = async () => {
                           onClick={() => {
                             setFormData(prev => ({ ...prev, reasonForContact: [] }));
                             setReasonTextSearch('');
+                            // Clear validation errors for reason for consultation
+                            setValidationErrors(prev => ({
+                              ...prev,
+                              reasonForContact: undefined
+                            }));
+                            // Reset complaint-related states
+                            setIsEmergencyOrUrgent(false);
+                            setPriorityMessage('');
+                            setPriorityMessageColor('');
+                            setSelectedComplaint(null);
+                            console.log('🔄 Reason for Contact cleared - text field, dropdown, and errors cleared');
                           }}
                           className={`${theme.accent} ${theme.primaryHover} text-xs sm:text-sm font-medium rounded-lg transition-colors px-3 py-1 self-start sm:self-auto`}
                         >
@@ -4854,11 +4890,18 @@ const handleContinueToBooking = async () => {
                             type="button"
                             onClick={() => {
                               setFormData(prev => ({ ...prev, reasonForContact: [] }));
+                              setReasonTextSearch('');
+                              // Clear validation errors for reason for consultation
+                              setValidationErrors(prev => ({
+                                ...prev,
+                                reasonForContact: undefined
+                              }));
                               // Reset complaint-related states when clearing selection
                               setIsEmergencyOrUrgent(false);
                               setPriorityMessage('');
                               setPriorityMessageColor('');
                               setSelectedComplaint(null);
+                              console.log('🔄 Reason for Contact cleared - text field, dropdown, and errors cleared');
                             }}
                             // disabled={isEmergencyOrUrgent || isLoadingDropdowns}
                             className={`${theme.accent} ${theme.primaryHover} text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed transition-colors`}
@@ -5810,23 +5853,33 @@ const handleContinueToBooking = async () => {
                       <div
                         key={clinic.id}
                         onClick={() => handleClinicSelect(clinic)}
-                        className={`p-3 sm:p-4 border-2 rounded-lg cursor-pointer transition-all hover:shadow-md min-h-[80px] sm:min-h-[60px] ${selectedClinic?.id === clinic.id
+                        className={`p-3 sm:p-4 border-2 rounded-lg cursor-pointer transition-all hover:shadow-md min-h-[80px] sm:min-h-[60px] relative group ${selectedClinic?.id === clinic.id
                           ? `${theme.border} ${theme.accentBg}`
                           : 'border-gray-200 hover:border-gray-300'
                           }`}
+                        title={clinic.direction && clinic.direction !== 'No directions available' ? clinic.direction : ''}
                       >
                         <h5 className="font-semibold text-xs sm:text-sm text-gray-900 mb-1 break-words">{clinic.name}</h5>
                         <div className="text-xs text-gray-600 mb-2">
                           <div className="flex items-center justify-between mb-1">
                             <span className="text-xs">{clinic.distance}</span>
                           </div>
-                          {/* Direction information for treatment centres */}
+                          {/* Direction information for treatment centres - simplified display */}
                           {clinic.direction && clinic.direction !== 'No directions available' && (
-                            <div className="text-xs text-gray-500 mt-1 line-clamp-2 break-words" title={clinic.direction}>
+                            <div className="text-xs text-gray-500 mt-1 line-clamp-2 break-words">
                               📍 {clinic.direction.length > 40 ? `${clinic.direction.substring(0, 40)}...` : clinic.direction}
                             </div>
                           )}
                         </div>
+
+                        {/* Hover tooltip for full directions */}
+                        {clinic.direction && clinic.direction !== 'No directions available' && clinic.direction.length > 40 && (
+                          <div className="absolute bottom-full left-0 mb-2 w-64 p-3 bg-gray-900 text-white text-xs rounded-lg shadow-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none z-10">
+                            <div className="font-medium mb-1">📍 Directions:</div>
+                            <div>{clinic.direction}</div>
+                            <div className="absolute top-full left-4 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-gray-900"></div>
+                          </div>
+                        )}
                       </div>
                     ))}
 
@@ -6096,13 +6149,13 @@ const handleContinueToBooking = async () => {
                   </div>
                 )}
 
-                {/* Payment and Booking Summary - Side by Side Layout */}
+                {/* Payment and Booking Summary - Fully Responsive Layout */}
                 {((isVirtualAppointment() && selectedSlot) || (selectedClinic && selectedSlot)) && (
-                  <div className="grid md:grid-cols-2 gap-4 md:gap-8 pt-6">
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-8 pt-6">
                     {/* Left Side - Payment Information */}
-                    <div className="bg-white border border-gray-200 rounded-lg p-4 sm:p-6">
-                      <div className="mb-6">
-                        <div className="flex justify-between items-center mb-4">
+                    <div className="bg-white border border-gray-200 rounded-lg p-3 sm:p-4 lg:p-6 order-2 lg:order-1">
+                      <div className="mb-4 lg:mb-6">
+                        <div className="flex justify-between items-center mb-2 lg:mb-4">
                           {/* <span className="text-sm font-medium text-gray-700">Consultation Fee:</span> */}
                           {/* <span className="text-lg font-bold text-gray-900">€{paymentAmount}</span> */}
                         </div>
@@ -6126,26 +6179,26 @@ const handleContinueToBooking = async () => {
                     </div>
 
                     {/* Right Side - Booking Summary */}
-                    <div className={`p-4 sm:p-6 rounded-lg ${theme.accentBg} border border-gray-200`}>
-                      <div className="flex items-center space-x-2 mb-6">
-                        
-                        <h4 className="text-lg font-semibold text-gray-900">Booking Summary</h4>
+                    <div className={`p-3 sm:p-4 lg:p-6 rounded-lg ${theme.accentBg} border border-gray-200 order-1 lg:order-2`}>
+                      <div className="flex items-center space-x-2 mb-4 lg:mb-6">
+
+                        <h4 className="text-base sm:text-lg font-semibold text-gray-900">Booking Summary</h4>
                       </div>
 
-                      <div className="space-y-3 text-sm text-gray-600 mb-6">
-                        <p>👤 Patient: {formData.fullName || `${formData.firstName} ${formData.lastName}`.trim() || 'Not specified'}</p>
-                        
+                      <div className="space-y-2 sm:space-y-3 text-xs sm:text-sm text-gray-600 mb-4 lg:mb-6">
+                        <p className="break-words">👤 Patient: {formData.fullName || `${formData.firstName} ${formData.lastName}`.trim() || 'Not specified'}</p>
+
                         <p>📋 Type: {getAppointmentTypeDisplay()}</p>
                         {!isVirtualAppointment() && selectedClinic && (
-                          <p>🏥 Clinic: {selectedClinic.name}</p>
+                          <p className="break-words">🏥 Clinic: {selectedClinic.name}</p>
                         )}
                         <p>🕐 Time: {selectedSlot}</p>
-                        <p>📧 Email: {formData.email || 'Not specified'}</p>
-                        <p>📞 Phone: {formData.phoneNumber || 'Not specified'}</p>
+                        <p className="break-words">📧 Email: {formData.email || 'Not specified'}</p>
+                        <p className="break-words">📞 Phone: {formData.phoneNumber || 'Not specified'}</p>
 
                         {isVirtualAppointment() && (
-                          <div className={`mt-4 p-3 ${theme.accentBg} rounded-lg`}>
-                            <p className={`${theme.text} font-medium text-sm`}>
+                          <div className={`mt-3 sm:mt-4 p-2 sm:p-3 ${theme.accentBg} rounded-lg`}>
+                            <p className={`${theme.text} font-medium text-xs sm:text-sm break-words`}>
                               {formData.appointmentType === 'vc'
                                 ? '💻 Video link will be sent to your email'
                                 : '📞 You will receive a call at the scheduled time'
@@ -6251,10 +6304,10 @@ const handleContinueToBooking = async () => {
                   </div>
                 )}
 
-                <div className="flex justify-between items-center pt-2 h-16 border-t border-gray-200">
-                  <span className="text-gray-600">Amount:</span>
-                  <span className={`font-bold text-lg ${theme.accent}`}>
-                    {isVirtualAppointment() ? '£35' : (selectedClinic?.price || '£35')}
+                <div className="flex justify-between items-center pt-2 h-12 sm:h-16 border-t border-gray-200">
+                  <span className="text-gray-600 text-sm sm:text-base">Amount:</span>
+                  <span className={`font-bold text-base sm:text-lg ${theme.accent}`}>
+                    {isVirtualAppointment() ? '€35' : (selectedClinic?.price || '€35')}
                   </span>
                 </div>
               </div>
