@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { useStripe, useElements, CardElement } from '@stripe/react-stripe-js';
-import { CreditCard, Lock, AlertCircle, CheckCircle } from 'lucide-react';
+import { CreditCard, Lock, AlertCircle, CheckCircle, Clock } from 'lucide-react';
+import { WEBHOOK_CONFIG, makeWebhookRequest } from '../config/webhooks';
 
 const StripePayment = ({ 
   amount, 
@@ -8,70 +9,36 @@ const StripePayment = ({
   onPaymentError, 
   isProcessing, 
   setIsProcessing,
-  bookingData 
+  bookingData,
+  timeRemaining,
+  isTimerActive,
+  startTimer,
+  formatTime,
+  showTimer
 }) => {
   const stripe = useStripe();
   const elements = useElements();
   const [error, setError] = useState(null);
   const [cardComplete, setCardComplete] = useState(false);
 
-  const handleSubmit = async (event) => {
-    event.preventDefault();
+  // Check if timer expired
+  const isTimerExpired = timeRemaining <= 0 && showTimer;
 
-    if (!stripe || !elements) {
-      return;
-    }
-
-    const card = elements.getElement(CardElement);
-
-    if (!card) {
-      return;
-    }
-
-    setIsProcessing(true);
-    setError(null);
-
-    try {
-      // Create payment method
-      const { error: paymentMethodError, paymentMethod } = await stripe.createPaymentMethod({
-        type: 'card',
-        card: card,
-        billing_details: {
-          name: bookingData.fullName || `${bookingData.firstName} ${bookingData.lastName}`,
-          email: bookingData.email,
-          phone: bookingData.phoneNumber,
-        },
-      });
-
-      if (paymentMethodError) {
-        setError(paymentMethodError.message);
-        setIsProcessing(false);
-        onPaymentError(paymentMethodError.message);
-        return;
-      }
-
-      // In a real implementation, you would send the payment method to your backend
-      // to create a payment intent and confirm the payment
-      
-      // For demo purposes, we'll simulate a successful payment
-      setTimeout(() => {
-        setIsProcessing(false);
-        onPaymentSuccess({
-          paymentMethodId: paymentMethod.id,
-          amount: amount,
-          currency: 'eur'
-        });
-      }, 2000);
-
-    } catch (err) {
-      setError(err.message);
-      setIsProcessing(false);
-      onPaymentError(err.message);
+  // Start timer when user first interacts with card field
+  const handleCardFocus = () => {
+    if (!isTimerActive && !isTimerExpired) {
+      startTimer();
     }
   };
 
   const handleCardChange = (event) => {
     setCardComplete(event.complete);
+    
+    // Start timer on first input
+    if (!isTimerActive && !isTimerExpired) {
+      startTimer();
+    }
+    
     if (event.error) {
       setError(event.error.message);
     } else {
@@ -95,7 +62,7 @@ const StripePayment = ({
         iconColor: '#ef4444',
       },
     },
-    hidePostalCode: false,
+    hidePostalCode: true,
   };
 
   const formatAmount = (amount) => {
@@ -105,8 +72,62 @@ const StripePayment = ({
     }).format(amount);
   };
 
+  const handleSubmit = async (event) => {
+    event.preventDefault();
+
+    if (!stripe || !elements || isTimerExpired) {
+      return;
+    }
+
+    setIsProcessing(true);
+    setError(null);
+
+    const cardElement = elements.getElement(CardElement);
+
+    try {
+      // Create payment method
+      const { error: paymentMethodError, paymentMethod } = await stripe.createPaymentMethod({
+        type: 'card',
+        card: cardElement,
+        billing_details: {
+          name: `${bookingData.firstName} ${bookingData.lastName}`,
+          email: bookingData.email,
+          phone: bookingData.phone,
+        },
+      });
+
+      if (paymentMethodError) {
+        throw new Error(paymentMethodError.message);
+      }
+
+      // Simulate payment success for now
+      // In production, you would create a payment intent on your backend
+      console.log('Payment method created:', paymentMethod);
+      
+      onPaymentSuccess({
+        paymentMethod,
+        amount,
+        currency: 'eur'
+      });
+
+    } catch (err) {
+      console.error('Payment error:', err);
+      setError(err.message);
+      onPaymentError(err.message);
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
   return (
     <div className="bg-white p-6 rounded-lg border border-gray-200 shadow-sm">
+      {isTimerExpired && (
+        <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg flex items-center space-x-2">
+          <AlertCircle className="h-4 w-4 text-red-500 flex-shrink-0" />
+          <span className="text-sm text-red-700">Payment session expired. Please choose another time slot.</span>
+        </div>
+      )}
+
       <div className="flex items-center space-x-2 mb-4">
         <CreditCard className="h-5 w-5 text-teal-600" />
         <h3 className="text-lg font-semibold text-gray-900">Payment Information</h3>
@@ -125,26 +146,43 @@ const StripePayment = ({
           <label className="block text-sm font-medium text-gray-700 mb-2">
             Card Details
           </label>
-          <div className="p-3 border border-gray-300 rounded-lg focus-within:border-teal-500 focus-within:ring-1 focus-within:ring-teal-500">
+          <div className={`p-3 border rounded-lg ${isTimerExpired 
+            ? 'border-red-300 bg-red-50 opacity-50' 
+            : 'border-gray-300 focus-within:border-teal-500 focus-within:ring-1 focus-within:ring-teal-500'}`}>
             <CardElement 
               options={cardElementOptions}
               onChange={handleCardChange}
+              onFocus={handleCardFocus}
+              disabled={isTimerExpired}
             />
           </div>
+          {/* {isTimerExpired && (
+            <p className="mt-1 text-sm text-red-600">
+              Payment time expired. Please refresh to try again.
+            </p>
+          )} */}
         </div>
 
         {error && (
-          <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg flex items-center space-x-2">
-            <AlertCircle className="h-4 w-4 text-red-500 flex-shrink-0" />
-            <span className="text-sm text-red-700">{error}</span>
+          <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg">
+            <div className="flex items-start space-x-2">
+              <AlertCircle className="h-5 w-5 text-red-500 flex-shrink-0 mt-0.5" />
+              <div>
+                <h4 className="text-sm font-medium text-red-800 mb-1">Payment Failed</h4>
+                <p className="text-sm text-red-700">{error}</p>
+                <p className="text-xs text-red-600 mt-2">
+                  If you continue to experience issues, please try a different payment method or contact your bank.
+                </p>
+              </div>
+            </div>
           </div>
         )}
 
         <button
           type="submit"
-          disabled={!stripe || !cardComplete || isProcessing}
+          disabled={!stripe || !cardComplete || isProcessing || isTimerExpired}
           className={`w-full py-3 px-4 rounded-lg font-medium transition-all flex items-center justify-center space-x-2 ${
-            !stripe || !cardComplete || isProcessing
+            !stripe || !cardComplete || isProcessing || isTimerExpired
               ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
               : 'bg-teal-600 hover:bg-teal-700 text-white shadow-md hover:shadow-lg'
           }`}
@@ -153,6 +191,11 @@ const StripePayment = ({
             <>
               <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
               <span>Processing Payment...</span>
+            </>
+          ) : isTimerExpired ? (
+            <>
+              <Lock className="h-4 w-4" />
+              <span>Session Expired</span>
             </>
           ) : (
             <>
@@ -172,3 +215,42 @@ const StripePayment = ({
 };
 
 export default StripePayment;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

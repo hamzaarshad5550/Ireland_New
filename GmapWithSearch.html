@@ -1,0 +1,607 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <!--<meta http-equiv="X-UA-Compatible" content="IE=edge"/>-->
+    <meta http-equiv="Pragma" content="no-cache" />
+    <meta http-equiv="Expires" content="0" />
+    <meta name="viewport" content="initial-scale=1.0, user-scalable=no">
+    <meta charset="utf-8">
+    <style>
+        html, body, #map-canvas {
+            height: 100%;
+            margin: 0px;
+            padding: 0px;
+        }
+        .infomsg {
+            display: none;
+        }
+
+        .controls {
+            margin-top: 16px;
+            border: 1px solid transparent;
+            border-radius: 2px 0 0 2px;
+            box-sizing: border-box;
+            -moz-box-sizing: border-box;
+            height: 32px;
+            outline: none;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+        }
+
+        #pac-input {
+            background-color: #fff;
+            padding: 0 11px 0 13px;
+            width: 400px;
+            font-family: Roboto;
+            font-size: 15px;
+            font-weight: 300;
+            text-overflow: ellipsis;
+        }
+
+            #pac-input:focus {
+                border-color: #4d90fe;
+                margin-left: -1px;
+                padding-left: 14px; /* Regular padding-left + 1. */
+                width: 401px;
+            }
+
+        .pac-container {
+            font-family: Roboto;
+        }
+
+        #type-selector {
+            color: #fff;
+            background-color: #4d90fe;
+            padding: 5px 11px 0px 11px;
+        }
+
+            #type-selector label {
+                font-family: Roboto;
+                font-size: 13px;
+                font-weight: 300;
+            }
+    </style>
+    <title></title>
+   <!-- CSS only -->
+     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-rbsA2VBKQhggwzxH7pPCaAqO46MgnOM80zW1RWuH61DGLwZJEdK2Kadq2F9CUG65" crossorigin="anonymous">
+     <script src="https://maps.googleapis.com/maps/api/js?V=3.47&&libraries=places&key=AIzaSyBa1jwKjq4Q4yhO6uVYJHNFet_qEHaINUc"></script>
+    <!--<script type="text/javascript" src="http://maps.google.com/maps/api/js?sensor=false"></script>-->
+    <script src="elabel.js" type="text/javascript"></script>
+    <script type="text/javascript" src="GAPI.js"></script>
+    <!-- JavaScript Bundle with Popper -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-kenU1KFdBIe4zVF0s0G1M5b4hcpxyD9F7jL+jjXkk+Q2h455rYXK/7HAuoJl+0I4" crossorigin="anonymous"></script>
+    <script type="text/javascript">
+
+        function noError() {
+            return true;
+        }
+
+        window.onerror = noError;
+
+    </script>
+    <script>
+        // This example adds a search box to a map, using the Google Place Autocomplete
+        // feature. People can enter geographical searches. The search box will return a
+        // pick list containing a mix of places and predicted search terms.
+        var mapAddress = "";
+        var markers = [];
+        var map;
+        var MapLoaded = false;
+
+        var lat;
+        var long;
+        function hideControls() {
+            try {
+
+
+            }
+            catch (err) {
+            }
+        }
+        function getAddressSelected()
+        {
+            CefSharp.PostMessage(elem.name.toString());
+        }
+        function setStartingLocation11(lati, longi) {
+            //alert("inside1");
+            //alert(lati);
+            //alert(longi);
+            document.getElementById('pac-input').focus();
+            //document.getElementById('pac-input').select();
+            DefaultLatitude = lati;
+            DefaultLongitude = longi;
+            beforeInitilize();
+            document.getElementById('pac-input').focus();
+            //document.getElementById('pac-input').select();
+        }
+        function setStartingLocation112(lati, longi) {
+            //alert("inside1");
+          
+            document.getElementById('pac-input').focus();
+            document.getElementById('pac-input').select();
+            //DefaultLatitude = lati;
+            //DefaultLongitude = longi;
+            //document.getElementById('pac-input').focus();
+            //document.getElementById('pac-input').select();
+        }
+
+        function getAddress(latLng) {
+            //alert('I am inside');
+            geocoder.geocode( {'latLng': latLng},
+              function(results, status) {
+                  if(status == google.maps.GeocoderStatus.OK) {
+                      if(results[0]) {
+                          
+                          //alert(results[0].formatted_address);
+                      }
+                      else {
+                          //alert("No results");
+                      }
+                  }
+                  else {
+                      //alert("else main")
+                  }
+              });
+        }
+
+        function setStartingLocation(address) {
+            try {
+
+                if (geocoder) {
+                    geocoder.getLatLng(address, function (point) {
+                        if (!point) {
+                            map.setCenter(new GLatLng(DefaultLatitude, DefaultLongitude), 12);
+                        }
+                        else {
+                            map.setCenter(point, 12);
+                        }
+                    }
+			);
+                }
+                else
+                    map.setCenter(new GLatLng(DefaultLatitude, DefaultLongitude), 12);
+            }
+            catch (err) {
+                map.setCenter(new GLatLng(DefaultLatitude, DefaultLongitude), 12);
+            }
+        }
+
+
+        function initMap() {
+            //alert("inside");
+            // The location of Uluru33.58434878165868, 73.09430438277835
+  //var uluru = { lat: 33.58434878165868, lng: 73.09430438277835 };
+  //          // The map, centered at Uluru
+  //var map = new google.maps.Map(document.getElementById("map-canvas"), {
+  //    zoom: 5,
+  //    center: uluru,
+  //});
+  //          // The marker, positioned at Uluru
+  //var marker = new google.maps.Marker({
+  //    position: uluru,
+  //    map: map,
+  //});
+        }
+
+        function beforeInitilize()
+        {
+//alert ('start')
+            if (!(typeof google === 'object' && typeof google.maps === 'object')) {
+                //alert('not loaded');
+           
+                $.getScript("https://maps.googleapis.com/maps/api/js?v=3.exp&signed_in=true&libraries=places").done(function () {
+                    //alert('yes');
+                    initialize();
+
+                });
+            }
+            else {
+                  //alert('started')
+            }
+
+            if (typeof DefaultLatitude == 'undefined' || typeof DefaultLongitude == 'undefined' || DefaultLatitude == 0 || DefaultLongitude == 0) {
+                DefaultLatitude = 53.3498;
+                DefaultLongitude = -6.2603;
+
+            }
+            //alert ('starting1')
+            var myLatlng = new google.maps.LatLng(DefaultLatitude, DefaultLongitude);
+             //alert ('starting2')  
+            var mapOptions = {
+                zoom: 15,
+                center: myLatlng
+            }
+             var map = new google.maps.Map(document.getElementById('map-canvas'), mapOptions);
+            map = new google.maps.Map(document.getElementById('map-canvas'), mapOptions);
+
+            //alert('init')
+            initialize();
+
+        }
+        var geocoder;
+        function initialize() {
+                //alert('here-za')
+            geocoder = new google.maps.Geocoder();
+            if (!(typeof google === 'object' && typeof google.maps === 'object')) {
+                //alert('not loaded');
+
+                $.getScript("https://maps.googleapis.com/maps/api/js?v=3.exp&signed_in=true&libraries=places").done(function () {
+                    //alert('yes');
+                    initialize();
+
+                });
+            }
+            else {
+                   //alert ('here2-sh')
+            }
+
+           if (typeof DefaultLatitude == 'undefined' || typeof DefaultLongitude == 'undefined' || DefaultLatitude == 0 || DefaultLongitude == 0) {
+               DefaultLatitude = 53.342686;
+                DefaultLongitude = -6.267118;
+
+            }
+             //alert('before');
+            var myLatlng = new google.maps.LatLng(DefaultLatitude, DefaultLongitude);
+             //alert ('after')
+            var mapOptions = {
+                zoom: 15,
+                center: myLatlng
+            }
+             var map = new google.maps.Map(document.getElementById('map-canvas'), mapOptions);
+             //alert('before1');   
+            map = new google.maps.Map(document.getElementById('map-canvas'), mapOptions);
+            //alert('before2');
+            var marker = new google.maps.Marker({
+                position: myLatlng,
+                map: map,
+                title: 'you are here'
+            });
+            //alert('load');
+            //AddMarker(0, DefaultLatitude, DefaultLongitude, '', '', true, '');
+            ////alert('start2')
+            //Create the search box and link it to the UI element.
+             //alert('4b')
+            var input = /** @type {HTMLInputElement} */(
+                document.getElementById('pac-input'));
+             //alert('4a')
+            map.controls[google.maps.ControlPosition.TOP_LEFT].push(input);
+              //alert('5')
+            var adr = '';
+
+            var searchBox = new google.maps.places.SearchBox(
+              /** @type {HTMLInputElement} */(input));
+
+            //[START region_getplaces]
+            //Listen for the event fired when the user selects an item from the
+            //pick list. Retrieve the matching places for that item.
+            google.maps.event.addListener(searchBox, 'places_changed', function () {
+                var places = searchBox.getPlaces();
+
+                //alert('1');
+
+                if (places.length == 0) {
+                    return;
+                }
+                for (var i = 0, marker; marker = markers[i]; i++) {
+                    marker.setMap(null);
+                }
+
+                //For each place, get the icon, place name, and location.
+                markers = [];
+                var bounds = new google.maps.LatLngBounds();
+                for (var i = 0, place; place = places[i]; i++) {
+                    var image = {
+                        url: place.icon,
+                        size: new google.maps.Size(71, 71),
+                        origin: new google.maps.Point(0, 0),
+                        anchor: new google.maps.Point(17, 34),
+                        scaledSize: new google.maps.Size(25, 25)
+                    };
+
+                    //Create a marker for each place.
+                    var marker = new google.maps.Marker({
+                        map: map,
+                        icon: image,
+                        title: place.name,
+                        position: place.geometry.location
+                    });
+
+                    //placeText = place.formatted_address;
+
+                    google.maps.event.addListener(marker, "click", function () {
+                        ////alert('2');
+                        var elem = document.getElementById("ClickedLatLng");
+                        var pos = marker.position;
+                        ////alert('market title=======' + marker.title);
+                        elem.name = pos.lat() + " " + pos.lng() + "|" + marker.title + "|" + place.formatted_address;
+                        ////alert(elem.name);
+                        document.title = "clicked";
+
+                        //elem.name = pos.lat() + " " + pos.lng() + "|" + marker.title;
+                    });
+                    lat = place.geometry.location;
+                    long = place.name;
+
+                    ////alert(long);
+                    ////alert(place.address_components);
+
+                    for (var i = 0; i < place.address_components.length; i++)
+                    {
+                        if (place.address_components[i].long_name != '') {
+                            if(adr != '')
+                                adr = adr + '*' + place.address_components[i].types + ':' + place.address_components[i].long_name;
+                            else
+                                adr = place.address_components[i].types + ':' + place.address_components[i].long_name;
+                        }
+                    }
+
+                    //alert(adr);
+
+                    ////alert(place.formatted_address);
+                    ////alert('end');
+                    markers.push(marker);
+                    //alert(place.name);
+                    //alert('name');
+
+                    bounds.extend(place.geometry.location);
+                }
+
+                map.fitBounds(bounds);
+
+                if (markers.length == 1) {
+                    //alert('hang on 1');
+                    var myLatLng = markers[0].position;
+                    //alert(myLatLng);
+                    //alert('hang on 1');
+                    var elem = document.getElementById("ClickedLatLng");
+                    //alert('hang on 1');
+                    //alert(addr);
+
+                    //elem.name = myLatLng.lat() + " " + myLatLng.lng() + "|" + markers[0].title + "|" + adr;
+                    mapAddress = myLatLng.lat() + "," + myLatLng.lng() + "|" + adr;
+                    ////alert(elem.name);
+                   // alert("mapp");
+                    //alert(mapAddress);
+                    CefSharp.PostMessage(mapAddress);
+                    //getAddress(myLatLng);
+                    
+
+                    document.title = "clicked";
+                    //alert(adr);
+
+                }
+            });
+
+            //[END region_getplaces]
+
+            //Bias the SearchBox results towards places that are within the bounds of the
+            //current map's viewport.
+            google.maps.event.addListener(map, 'bounds_changed', function () {
+                var bounds = map.getBounds();
+                searchBox.setBounds(bounds);
+            });
+            google.maps.event.addListener(map, 'click', function (event) {
+                ////alert('hang on ');
+
+                //var adr2;
+                var myLatLng = event.latLng;
+                //geocodePosition(myLatLng);
+
+                ////alert('geocode');
+                geocoder.geocode({ 'location': myLatLng }, function (results, status) {
+                    if (status === 'OK') {
+                        if (results[0]) {
+                            //map.setZoom(11);
+
+                            var addr = '';
+
+                            for (var i = 0; i < results[0].address_components.length; i++) {
+                                if (results[0].address_components[i].long_name != '') {
+                                    if (addr != '')
+                                        addr = addr + '*' + results[0].address_components[i].types + ':' + results[0].address_components[i].long_name;
+                                    else
+                                        addr = results[0].address_components[i].types + ':' + results[0].address_components[i].long_name;
+                                }
+                            }
+
+                            var elem = document.getElementById("ClickedLatLng");
+                            //alert(addr);
+                            //alert('lat');
+                            //alert(myLatLng.lat());
+                            //elem.name = myLatLng.lat() + ","+ myLatLng.lng() + "|"+ addr;
+                            mapAddress = myLatLng.lat() + "," + myLatLng.lng() + "|" + addr;
+                            ////alert(elem.name);
+                            //alert("mapp");
+                            //alert(mapAddress);
+                            CefSharp.PostMessage(mapAddress);
+                            document.title = "clicked";
+
+                            //infowindow.open(map, marker);
+                        }
+                        //else {
+                        //    //alert('No results found');
+                        //}
+                    }
+                    //else {
+                    //    //alert('Geocoder failed due to: ' + status);
+                    //}
+                });
+                //clearMarkers();
+                ////alert('Clearing markers');
+                for (var i = 0, marker; marker = markers[i]; i++) {
+                    marker.setMap(null);
+                }
+                markers = [];
+                var marker = new google.maps.Marker({
+                    position: myLatLng,
+                    map: map
+                });
+                markers.push(marker);
+                ////alert(event.address_components);
+                ////alert(event.address_components);
+                //for (var i = 0; i < event.address_components.length; i++) {
+                //    if (event.address_components[i].long_name != '') {
+                //        if (adr2 != '')
+                //            adr2 = adr2 + '*' + event.address_components[i].types + ': ' + event.address_components[i].long_name;
+                //        else
+                //            adr2 = event.address_components[i].types + ': ' + event.address_components[i].long_name;
+                //    }
+                //}
+
+                ////alert(marker.getPlace());
+                ////alert(marker.getPlace());
+
+                //var elem = document.getElementById("ClickedLatLng");
+                //elem.name = myLatLng.lat() + " " + myLatLng.lng() + "|" + " " + "|" + loc;
+                ////alert(elem.name);
+                //document.title = "clicked";
+
+            })
+
+        }
+
+
+        function OnTilesLoaded() {
+            try {
+
+                if (IsSimulation == 1) {
+                    var elem = document.getElementById("txtCenterPosition");
+                    var CenterPoint = map.getCenter();
+                    elem.name = CenterPoint.lat() + "," + CenterPoint.lng();
+
+                    elem = document.getElementById("txtZoom");
+                    elem.name = map.getZoom();
+
+                }
+                document.title = "Completed";
+                displayFocusedText();
+                isLoadingTiles = false;
+                ////alert("C _ OnTilesLoaded" );
+
+            }
+            catch (err) {
+            }
+        }
+
+        function OnBeforetilesLoad() {
+            try {
+                isLoadingTiles = true;
+                document.title = "Loading";
+                displayFocusedText();
+                ////alert("L _ OnBeforetilesLoad"  );
+            }
+            catch (err) {
+            }
+        }
+
+        function OnMoveStart() {
+            try {
+                document.title = "Loading";
+                //displayFocusedText();
+                ////alert("L _ OnMoveStart");
+            }
+            catch (err) {
+            }
+        }
+
+        function OnMoveEnd() {
+            try {
+
+                if (IsSimulation == 1) {
+                    var elem = document.getElementById("txtCenterPosition");
+                    var CenterPoint = map.getCenter();
+                    elem.name = CenterPoint.lat() + "," + CenterPoint.lng();
+
+                    elem = document.getElementById("txtZoom");
+                    elem.name = map.getZoom();
+                }
+                document.title = "Completed";
+                ////alert("C _ Completed");
+                displayFocusedText();
+            }
+            catch (err) {
+            }
+        }
+
+        function MapMove() {
+            try {
+                document.title = "Loading";
+                ////alert("L _ MapMove");
+                displayFocusedText();
+            }
+            catch (err) {
+            }
+        }
+
+        function MapMoveEnd() {
+            try {
+                if (isLoadingTiles == false)
+                    document.title = "Completed";
+                ////alert("C _ MapMoveEnd");
+                displayFocusedText();
+            }
+            catch (err) {
+            }
+        }
+
+        function OnMapLoad() {
+            try {
+
+                isMapLoaded = true;
+                if (isUIUpdated == false)
+                    UpdateUI();
+
+                //map.setMapType(G_SATELLITE_MAP);
+
+                if (isUIUpdated) {
+                    google.maps.event.removeListener(myEventListener);
+                    //GEvent.addListener(map, "mousemove", MouseMoving);
+                }
+            }
+            catch (err) {
+            }
+
+        }
+
+        function MouseMoving() {
+            try {
+                if (map != null) {
+                    map.enableScrollWheelZoom();
+                    //                if(window.status.length > 0 )
+                    //                    //alert(window.status);
+                }
+
+                focus();
+            }
+            catch (err) {
+            }
+        }
+        function UnLoad() {
+            try {
+                GUnload();
+            }
+            catch (err) {
+            }
+
+        }
+      google.maps.event.addDomListener(window, 'load', initialize);
+
+    </script>
+    <style>
+        #target {
+            width: 345px;
+        }
+    </style>
+</head>
+<body>
+    <input id="pac-input" class="controls" type="text"  placeholder="Search Box">
+        <div id="map-canvas">
+        <input id="RouteStatus" style="visibility:hidden" />
+        <input id="ClickedLatLng" style="visibility:hidden" />
+        <input id="txtZoom" style="visibility:hidden" />
+        <input id="txtCenterPosition" style="visibility:hidden" />
+        </div>
+    <div>
+
+        </div>
+</body>
+</html>

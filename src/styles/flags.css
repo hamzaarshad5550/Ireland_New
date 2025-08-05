@@ -1,0 +1,69 @@
+/* Enhanced flag emoji rendering for better cross-browser compatibility */
+
+.flag-emoji {
+  font-family: 
+    'Apple Color Emoji',
+    'Segoe UI Emoji', 
+    'Noto Color Emoji',
+    'EmojiOne',
+    'Twemoji Mozilla',
+    'Android Emoji',
+    'Symbola',
+    system-ui,
+    sans-serif;
+  
+  /* Ensure consistent sizing */
+  font-size: 18px !important;
+  line-height: 1 !important;
+  display: inline-block !important;
+  min-width: 20px;
+  text-align: center;
+  
+  /* Prevent text selection */
+  user-select: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  
+  /* Improve rendering */
+  font-variant-emoji: emoji;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.flag-emoji-large {
+  font-size: 20px !important;
+}
+
+.flag-emoji-small {
+  font-size: 16px !important;
+}
+
+/* Fallback for browsers that don't support color emojis */
+@supports not (font-variant-emoji: emoji) {
+  .flag-emoji::before {
+    content: "🏳️";
+    color: #6b7280;
+  }
+}
+
+/* Mobile responsive adjustments */
+@media (max-width: 640px) {
+  .flag-emoji {
+    font-size: 16px !important;
+    min-width: 18px;
+  }
+  
+  .flag-emoji-large {
+    font-size: 18px !important;
+  }
+}
+
+/* High DPI display optimizations */
+@media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+  .flag-emoji {
+    font-weight: normal;
+    transform: translateZ(0);
+  }
+}

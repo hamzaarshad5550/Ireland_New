@@ -1,13 +1,21 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import './index.css';
-import App from './App';
+import AppRouter from './components/AppRouter';
 import reportWebVitals from './reportWebVitals';
+import { ThemeProvider } from './modern-ui/theme-provider.tsx';
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
   <React.StrictMode>
-    <App />
+    <ThemeProvider
+      attribute="class"
+      defaultTheme="light"
+      enableSystem
+      disableTransitionOnChange
+    >
+      <AppRouter />
+    </ThemeProvider>
   </React.StrictMode>
 );
 
