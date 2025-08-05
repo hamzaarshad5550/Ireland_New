@@ -2064,6 +2064,7 @@ export default function CareHQBooking() {
         "TrCentreName": bookingData.TrCentreName || selectedClinic?.name || "",
         "PatientName": bookingData.PatientName || `${formData.firstName} ${formData.lastName}`.trim() || "",
         "ContactNo": bookingData.ContactNo || formData.phoneNumber || "",
+        "Email": bookingData.Email || formData.email || "",
         "CaseNo": bookingData.CaseNo || "",
         "AppointmentID": bookingData.AppointmentID || 0,
         "AppointmentType": bookingData.AppointmentType || (formData.appointmentType === "1" ? "Video Consult" : "Face 2 Face"),
