@@ -426,7 +426,7 @@ const useCurrentLocationOSM = () => {
         `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}&addressdetails=1`,
         {
           headers: {
-            'User-Agent': 'SouthDoc-Booking-App/1.0 (contact@southdoc.ie)' // Required by Nominatim
+            'User-Agent': 'Booking-App/1.0 (contact@Practice.ie)' // Required by Nominatim
           }
         }
       );
@@ -1930,7 +1930,7 @@ export default function CareHQBooking() {
       console.log('🚨 Emergency priority detected - showing message');
     } else if (hasUrgent) {
       setIsEmergencyOrUrgent(true);
-      setPriorityMessage('If your reason for contacting us is urgent, please call **📞 0818 355 999');
+      setPriorityMessage('If your reason for contacting us is urgent, please call **📞 0818 123 456');
       setPriorityMessageColor('text-yellow-600 bg-yellow-50 border-yellow-200');
       console.log('⚠️ Urgent priority detected - showing message');
     } else {
@@ -2333,13 +2333,13 @@ export default function CareHQBooking() {
     }
 
     if (age < 3) {
-      setAgeValidationError('Patients under 3 years of age cannot book online. Please call 📞 0818 355 999');
+      setAgeValidationError('Patients under 3 years of age cannot book online. Please call 📞 0818 123 456');
       setIsAgeInvalid(true);
       return false;
     }
 
     if (age > 75) {
-      setAgeValidationError('Patients over 75 years of age cannot book online. Please call 📞 0818 355 999');
+      setAgeValidationError('Patients over 75 years of age cannot book online. Please call 📞 0818 123 456');
       setIsAgeInvalid(true);
       return false;
     }
@@ -2464,7 +2464,7 @@ export default function CareHQBooking() {
   // Add currentLanguage as a dependency to any useEffect that renders UI text
   useEffect(() => {
     // Example of an effect that should re-run when language changes
-    document.title = t('appTitle') || 'SouthDoc Booking';
+    document.title = t('appTitle') || 'Booking';
   }, [currentLanguage]);
 
   // Add a blur handler for the text input
@@ -4743,7 +4743,7 @@ const handleContinueToBooking = async () => {
         <div className="hidden lg:flex items-center text-white text-left max-w-md flex-shrink-0">
           <div>
             <div className="font-bold text-sm lg:text-base leading-tight">
-              SouthDoc is a GP out-of-hours service
+              GP out-of-hours service
             </div>
             <div className="text-xs lg:text-sm opacity-90 leading-tight mt-1">
               for medical issues that cannot wait for daytime practice
@@ -4807,7 +4807,7 @@ const handleContinueToBooking = async () => {
                       title="🚨 Emergency Notice"
                       message="If you are experiencing a medical emergency, please call"
                       emergencyNumber="999"
-                      urgentNumber="0818 355 999"
+                      urgentNumber="0818 123 456"
                       onClose={() => setShowEmergencyNotice(false)}
                     />
                   // still the same siise</div>
@@ -5357,10 +5357,18 @@ const handleContinueToBooking = async () => {
                         
                         {/* Unknown GP message */}
                         {isUnknownGPChecked && (
-                          <div className={`mt-3 p-3 ${theme.accentBg} ${theme.border} rounded-lg`}>
-                            <p className={`text-xs sm:text-sm ${theme.text} break-words`}>
-                              Outcome of this appointment won't send to your GP
-                            </p>
+                          <div className="mt-3 p-4 border rounded-lg text-blue-600 bg-blue-50 border-blue-200">
+                            <div className="flex items-start space-x-2">
+                              <span className="text-blue-600 text-lg">ℹ️</span>
+                              <div className="flex-1">
+                                <p className="font-medium text-sm">
+                                  GP Information Notice
+                                </p>
+                                <p className="text-sm mt-1">
+                                  Outcome of this appointment won't send to your GP
+                                </p>
+                              </div>
+                            </div>
                           </div>
                         )}
                       </div>
@@ -6299,18 +6307,27 @@ const handleContinueToBooking = async () => {
                   </span>
                 </div>
 
-                {!isVirtualAppointment() && selectedClinic && (
-                  <div className="flex justify-between items-center">
-                    <span className="text-gray-600">Clinic:</span>
-                    <span className="font-medium text-gray-900">{selectedClinic.name}</span>
-                  </div>
-                )}
-
                 {selectedSlot && (
                   <div className="flex justify-between items-center">
                     <span className="text-gray-600">Time:</span>
                     <span className="font-medium text-gray-900">{selectedSlot}</span>
                   </div>
+                )}
+
+                {!isVirtualAppointment() && selectedClinic && (
+                  <>
+                    <div className="flex justify-between items-center">
+                      <span className="text-gray-600">Clinic:</span>
+                      <span className="font-medium text-gray-900">{selectedClinic.name}</span>
+                    </div>
+                    {selectedClinic.direction && selectedClinic.direction !== 'No directions available' && (
+                      <div className="mt-1">
+                        <span className="text-xs text-gray-500 break-words">
+                          📍 {selectedClinic.direction}
+                        </span>
+                      </div>
+                    )}
+                  </>
                 )}
 
                 <div className="flex justify-between items-center pt-2 h-12 sm:h-16 border-t border-gray-200">
