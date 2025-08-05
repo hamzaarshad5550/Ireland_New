@@ -1939,7 +1939,8 @@ export default function CareHQBooking() {
           "StartTime": reservedAppointment.StartTime,
           "EndTime": reservedAppointment.EndTime,
           "Status": true, // True to confirm booking after payment
-          "Email": formData.email || ""
+          "Email": formData.email || "",
+          "VideoURL": ""
         };
 
         console.log('📤 Final booking confirmation payload:', confirmationPayload);
@@ -1962,7 +1963,12 @@ export default function CareHQBooking() {
                 try {
                   const nestedData = JSON.parse(confirmationResult.data);
                   console.log('✅ Final booking confirmed with details:', nestedData);
-                  
+
+                  // Check if this is a successful booking confirmation
+                  const isSuccessfulBooking = confirmationPayload.workflowtype === "book_appointment" &&
+                                            confirmationPayload.Status === true &&
+                                            nestedData.AppointmentID;
+
                   // Update reservation with final confirmation data
                   setReservedAppointment(prev => ({
                     ...prev,
@@ -1975,14 +1981,25 @@ export default function CareHQBooking() {
                     ContactNo: nestedData.ContactNo || prev.ContactNo,
                     Email: nestedData.Email || prev.Email
                   }));
-                  
+
+                  // Trigger confirmation emails if booking was successful
+                  if (isSuccessfulBooking) {
+                    console.log('🎯 Successful booking detected, triggering confirmation emails...');
+                    await sendConfirmationEmails(nestedData);
+                  }
+
                 } catch (parseError) {
                   console.log('📋 Final booking confirmation data:', confirmationResult);
                 }
               } else {
                 // Handle direct response without nested data
                 console.log('📋 Final booking confirmation completed:', confirmationResult);
-                
+
+                // Check if this is a successful booking confirmation
+                const isSuccessfulBooking = confirmationPayload.workflowtype === "book_appointment" &&
+                                          confirmationPayload.Status === true &&
+                                          confirmationResult.AppointmentID;
+
                 // Update with direct response data if available
                 if (confirmationResult.CaseNo) {
                   setReservedAppointment(prev => ({
@@ -1990,6 +2007,12 @@ export default function CareHQBooking() {
                     CaseNo: confirmationResult.CaseNo,
                     Status: confirmationResult.Status || 'Confirmed'
                   }));
+                }
+
+                // Trigger confirmation emails if booking was successful
+                if (isSuccessfulBooking) {
+                  console.log('🎯 Successful booking detected, triggering confirmation emails...');
+                  await sendConfirmationEmails(confirmationResult);
                 }
               }
             } catch (parseError) {
@@ -2030,6 +2053,62 @@ export default function CareHQBooking() {
   };
     // Place this function near other handler functions, after handlePaymentSuccess and before handleSuccessPopupClose
   
+  // Function to send confirmation emails after successful booking
+  const sendConfirmationEmails = async (bookingData) => {
+    try {
+      console.log('📧 Sending confirmation emails for booking:', bookingData);
+
+      // Extract data from the booking response
+      const confirmationPayload = {
+        "workflowtype": "send_confirmation_emails",
+        "TrCentreName": bookingData.TrCentreName || selectedClinic?.name || "",
+        "PatientName": bookingData.PatientName || `${formData.firstName} ${formData.lastName}`.trim() || "",
+        "ContactNo": bookingData.ContactNo || formData.phoneNumber || "",
+        "CaseNo": bookingData.CaseNo || "",
+        "AppointmentID": bookingData.AppointmentID || 0,
+        "AppointmentType": bookingData.AppointmentType || (formData.appointmentType === "1" ? "Video Consult" : "Face 2 Face"),
+        "Price": bookingData.Price || paymentAmount || 0,
+        "practiceVideoURL": bookingData.practiceVideoURL || "https://www.meetingvideourlpractice.com",
+        "TrCentreAddress": bookingData.TrCentreAddress || selectedClinic?.address || "",
+        "TrCentreLatitude": bookingData.TrCentreLatitude || selectedClinic?.latitude || "",
+        "TrCentreLongitude": bookingData.TrCentreLongitude || selectedClinic?.longitude || "",
+        "StartTime": bookingData.StartTime || reservedAppointment?.StartTime || "",
+        "EndTime": bookingData.EndTime || reservedAppointment?.EndTime || "",
+        "patientVideoURL": bookingData.patientVideoURL || "https://www.meetingvideourlpatient.com"
+      };
+
+      console.log('📤 Confirmation email payload:', confirmationPayload);
+
+      const response = await makeWebhookRequest(WEBHOOK_CONFIG.LOOKUPS_WEBHOOK, confirmationPayload);
+
+      if (!response.ok) {
+        console.error('❌ Confirmation email sending failed:', response.status, response.statusText);
+        // Don't throw error - email failure shouldn't break the booking flow
+        return false;
+      }
+
+      const responseText = await response.text();
+      console.log('📥 Confirmation email response:', responseText);
+
+      if (responseText && responseText.trim() !== '') {
+        try {
+          const emailResult = JSON.parse(responseText);
+          console.log('✅ Confirmation emails sent successfully:', emailResult);
+          return true;
+        } catch (parseError) {
+          console.log('📧 Confirmation email sent (text response):', responseText);
+          return true;
+        }
+      }
+
+      return true;
+    } catch (error) {
+      console.error('❌ Error sending confirmation emails:', error);
+      // Don't throw error - email failure shouldn't break the booking flow
+      return false;
+    }
+  };
+
   // Add function to handle directions
   const handleGetDirections = async () => {
     try {
@@ -2049,7 +2128,8 @@ export default function CareHQBooking() {
         "AppointmentID": reservedAppointment.AppointmentID,
         "StartTime": reservedAppointment.StartTime,
         "EndTime": reservedAppointment.EndTime,
-        "Status": true
+        "Status": true,
+        "VideoURL": ""
       };
 
       console.log('📤 Directions request payload:', directionsPayload);
@@ -2224,13 +2304,13 @@ export default function CareHQBooking() {
     }
 
     if (age < 3) {
-      setAgeValidationError('Patients under 3 years old cannot book online.');
+      setAgeValidationError('Patients under 3 years of age cannot book online. Please call 📞 0818 355 999');
       setIsAgeInvalid(true);
       return false;
     }
 
     if (age > 75) {
-      setAgeValidationError('Patients over 75 years of age cannot book online.');
+      setAgeValidationError('Patients over 75 years of age cannot book online. Please call 📞 0818 355 999');
       setIsAgeInvalid(true);
       return false;
     }
@@ -4524,7 +4604,7 @@ const handleContinueToBooking = async () => {
   <div className="fixed top-4 right-4 z-50 flex space-x-2">
 
     {/* SMS Demo Button */}
-    <div className="relative">
+    {/* <div className="relative">
       <button
         onClick={() => setShowSmsForm(true)}
         className={`p-3 rounded-full bg-green-600 hover:bg-green-700 text-white shadow-lg transition-all transform hover:scale-105`}
@@ -4534,7 +4614,7 @@ const handleContinueToBooking = async () => {
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
         </svg>
       </button>
-    </div>
+    </div> */}
     {/* Language Selector Button - HIDDEN */}
     {/* Commented out language selector
     <div className="relative">
@@ -4897,10 +4977,10 @@ const handleContinueToBooking = async () => {
                         {showValidationErrors && validationErrors.dateOfBirth && (
                           <p className="mt-1 text-red-600 text-xs sm:text-sm break-words">{validationErrors.dateOfBirth}</p>
                         )}
-                        {isAgeInvalid && (
+                        {isAgeInvalid && ageValidationError && (
                           <p className="mt-1 text-red-600 text-xs sm:text-sm flex items-start break-words">
                             <span className="mr-1 flex-shrink-0">⚠️</span>
-                            <span>You must be 16 or older to book online</span>
+                            <span>{ageValidationError}</span>
                           </p>
                         )}
                       </div>
@@ -5130,6 +5210,20 @@ const handleContinueToBooking = async () => {
                           <label htmlFor="gp" className="block text-sm font-medium text-gray-700">
                             General Practitioner<span className="text-red-500"> *</span>
                           </label>
+                          {/* ByPass GP Checkbox - Horizontally placed with label */}
+                          <div className="flex items-center">
+                            <input
+                              type="checkbox"
+                              id="unknownGP"
+                              checked={isUnknownGPChecked}
+                              onChange={handleUnknownGPChange}
+                              disabled={isLoadingDropdowns || isEmergencyOrUrgent}
+                              className="h-4 w-4 text-teal-600 focus:ring-teal-500 border-gray-300 rounded disabled:opacity-50 disabled:cursor-not-allowed flex-shrink-0"
+                            />
+                            <label htmlFor="unknownGP" className="ml-2 text-sm font-medium text-gray-700 whitespace-nowrap">
+                              ByPass GP
+                            </label>
+                          </div>
                         </div>
                         <div className="w-full">
                           <SearchableDropdown
@@ -5157,20 +5251,6 @@ const handleContinueToBooking = async () => {
                         {showValidationErrors && validationErrors.gp && !isUnknownGPChecked && (
                           <p className="mt-1 text-red-600 text-xs sm:text-sm break-words">{validationErrors.gp}</p>
                         )}
-                        {/* ByPass GP Checkbox - Mobile responsive */}
-                        <div className="mt-3 flex items-start">
-                          <input
-                            type="checkbox"
-                            id="unknownGP"
-                            checked={isUnknownGPChecked}
-                            onChange={handleUnknownGPChange}
-                            disabled={isLoadingDropdowns || isEmergencyOrUrgent}
-                            className="h-4 w-4 mt-0.5 text-teal-600 focus:ring-teal-500 border-gray-300 rounded disabled:opacity-50 disabled:cursor-not-allowed flex-shrink-0"
-                          />
-                          <label htmlFor="unknownGP" className="ml-2 block text-sm font-medium text-gray-700 break-words">
-                            ByPass GP
-                          </label>
-                        </div>
                       </div>
                       <div>
                         {/* Surgery label with Clear Section button - Mobile responsive */}

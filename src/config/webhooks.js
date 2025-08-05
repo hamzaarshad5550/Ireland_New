@@ -88,6 +88,8 @@ const createDynamicWebhookConfig = () => {
     WORKFLOW_TYPES: {
       LOOKUPS: 'lookups',
       BOOKING: 'booking',
+      BOOK_APPOINTMENT: 'book_appointment',
+      SEND_CONFIRMATION_EMAILS: 'send_confirmation_emails',
       PATIENT_DATA: 'patient_data',
       PATIENT_REGISTRATION: 'save_patient_details',
       TREATMENT_CENTRES: 'treatment_centres'
