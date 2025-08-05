@@ -23,6 +23,9 @@ import EmergencyNotice from './components/EmergencyNotice.tsx';
 // CSS imports
 import './styles/flags.css';
 
+// Constants
+const DEFAULT_CONSULTATION_FEE = 35; // Default consultation fee - will be updated from API response
+
 // Animated Tick Component
 const AnimatedTick = ({ size = 32, className = '', color = 'text-green-600' }) => {
   const [isVisible, setIsVisible] = useState(false);
@@ -999,7 +1002,7 @@ export default function CareHQBooking() {
   const [isLoadingDropdowns, setIsLoadingDropdowns] = useState(false);
 
   // Payment-related state
-  const [paymentAmount, setPaymentAmount] = useState(50); // Default consultation fee
+  const [paymentAmount, setPaymentAmount] = useState(DEFAULT_CONSULTATION_FEE); // Default consultation fee - will be updated from API
   const [isProcessingPayment, setIsProcessingPayment] = useState(false);
   const [paymentError, setPaymentError] = useState(null);
   const [paymentSuccess, setPaymentSuccess] = useState(false);
@@ -1085,11 +1088,17 @@ export default function CareHQBooking() {
 
   // Calculate payment amount based on appointment type
   const calculatePaymentAmount = () => {
+    // For virtual appointments, check if we have a specific virtual price from API
     if (isVirtualAppointment()) {
-      return 35; // Virtual consultations
+      // Use dynamic pricing from API response, fallback to current paymentAmount
+      return paymentAmount || DEFAULT_CONSULTATION_FEE; // Use API value or fallback to default
     } else {
+      // For face-to-face appointments, use clinic-specific pricing or API default
+      if (selectedClinic?.advancePaymentValue) {
+        return selectedClinic.advancePaymentValue;
+      }
       // Use the payment amount from AdvPayment (set in fetchTreatmentCentres)
-      return paymentAmount || 45; // Default to 45 if no AdvPayment received
+      return paymentAmount || DEFAULT_CONSULTATION_FEE; // Default fallback if no AdvPayment received
     }
   };
 
@@ -2850,7 +2859,7 @@ export default function CareHQBooking() {
     setSelectedClinic(null);
     setSelectedSlot(null);
     setBookingReference('');
-    setPaymentAmount(50);
+    setPaymentAmount(DEFAULT_CONSULTATION_FEE); // Reset to default, will be updated from API
     setPaymentError(null);
     setPaymentSuccess(false);
     setValidationErrors({});
@@ -3515,7 +3524,7 @@ export default function CareHQBooking() {
               setPaymentAmount(numericValue);
             } else {
               console.log('⚠️ No AdvPayment found in response, using default amount');
-              setPaymentAmount(45); // Default fallback
+              setPaymentAmount(DEFAULT_CONSULTATION_FEE); // Default fallback
             }
           } else {
             console.log('❌ No treatment centres found in parsed response');
@@ -6307,7 +6316,7 @@ const handleContinueToBooking = async () => {
                 <div className="flex justify-between items-center pt-2 h-12 sm:h-16 border-t border-gray-200">
                   <span className="text-gray-600 text-sm sm:text-base">Amount:</span>
                   <span className={`font-bold text-base sm:text-lg ${theme.accent}`}>
-                    {isVirtualAppointment() ? '€35' : (selectedClinic?.price || '€35')}
+                    {isVirtualAppointment() ? `€${paymentAmount}` : (selectedClinic?.price || `€${paymentAmount}`)}
                   </span>
                 </div>
               </div>
