@@ -14,7 +14,7 @@ const EmergencyNotice: React.FC<EmergencyNoticeProps> = ({
   title = "Emergency Notice",
   message = "If you are experiencing a medical emergency, please call",
   emergencyNumber = "999",
-  urgentNumber = "0818 355 999",
+  urgentNumber = "0818 123 456",
   onClose,
   className = ""
 }) => {

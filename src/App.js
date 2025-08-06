@@ -4731,7 +4731,7 @@ const handleContinueToBooking = async () => {
       {/* GP Logo on the Left */}
       <div className="flex items-center">
         <img
-          src="/GPLogo.png"
+          src="/GPOpenApp.png"
           alt="GP Logo"
           className="h-10 sm:h-12 w-auto animate-slide-in-left"
         />
@@ -5077,7 +5077,7 @@ const handleContinueToBooking = async () => {
                       <div>
                         <div className="flex items-center justify-between mb-2">
                           <label className="block text-sm font-medium text-gray-700">GMS Number</label>
-                          <div className="relative">
+                          <div className="relative overflow-visible">
                             {/* Only show Info icon when GMS validation data is available */}
                             {gmsValidationData && (
                               <Info
@@ -5090,7 +5090,7 @@ const handleContinueToBooking = async () => {
 
                             {/* GMS Info Popup - Mobile Responsive */}
                             {showGmsInfo && gmsValidationData && (
-                              <div className="absolute right-0 top-6 z-[60] w-72 sm:w-80 md:w-96 bg-white border border-gray-200 rounded-lg shadow-xl p-3 sm:p-4 max-w-[calc(100vw-2rem)]">
+                              <div className="absolute z-[60] w-72 sm:w-80 md:w-96 bg-white border border-gray-200 rounded-lg shadow-xl p-3 sm:p-4 max-w-[calc(100vw-2rem)]">
                                 <h3 className="font-semibold text-gray-800 mb-3 text-xs sm:text-sm border-b pb-2">GMS Validation Details</h3>
                                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3 text-xs">
                                   <div className="space-y-1.5 sm:space-y-2">
@@ -5357,13 +5357,10 @@ const handleContinueToBooking = async () => {
                         
                         {/* Unknown GP message */}
                         {isUnknownGPChecked && (
-                          <div className="mt-3 p-4 border rounded-lg text-blue-600 bg-blue-50 border-blue-200">
+                          <div className="mt-3 p-3 text-yellow-600 bg-yellow-50 border-yellow-200">
                             <div className="flex items-start space-x-2">
-                              <span className="text-blue-600 text-lg">ℹ️</span>
+                              <span className="text-blue-600 text-lg">⚠️</span>
                               <div className="flex-1">
-                                <p className="font-medium text-sm">
-                                  GP Information Notice
-                                </p>
                                 <p className="text-sm mt-1">
                                   Outcome of this appointment won't send to your GP
                                 </p>
@@ -5373,6 +5370,7 @@ const handleContinueToBooking = async () => {
                         )}
                       </div>
                     </div>
+                    
 
 
                   </div>
