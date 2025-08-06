@@ -1,18 +1,22 @@
 import React, { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
-import { 
-  Calendar, 
-  Clock, 
-  Users, 
-  Shield, 
-  Star, 
-  CheckCircle, 
-  Phone, 
-  Mail, 
+import {
+  Calendar,
+  Clock,
+  Users,
+  Shield,
+  Star,
+  CheckCircle,
+  Phone,
+  Mail,
   MapPin,
   ArrowRight,
   Heart,
-  Stethoscope
+  Stethoscope,
+  Video,
+  UserCheck,
+  Bell,
+  Activity
 } from 'lucide-react';
 
 // Animation variants
@@ -268,36 +272,56 @@ const HeroSection = ({ onOpenAppointment }) => {
                   className="absolute inset-0"
                 >
                   <div className="relative w-full h-full">
+                    {/* Online Consultation (orange) - Top position */}
                     <motion.div
                       animate={{ y: [0, -5, 0] }}
                       transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
                       className="absolute -top-2 left-1/2 transform -translate-x-1/2 bg-white p-3 rounded-xl shadow-lg"
                     >
-                      <Heart className="w-6 h-6 text-red-500" />
+                      <Video className="w-6 h-6 text-orange-500" />
+                      {/* Static title above icon */}
+                      <div className="absolute -top-8 left-1/2 transform -translate-x-1/2 text-xs font-medium text-gray-700 whitespace-nowrap">
+                        Online Consultation
+                      </div>
                     </motion.div>
 
+                    {/* Patient Care (red) - Right position */}
                     <motion.div
                       animate={{ y: [0, 5, 0] }}
                       transition={{ duration: 2, repeat: Infinity, ease: "easeInOut", delay: 1 }}
                       className="absolute top-1/2 -right-2 transform -translate-y-1/2 bg-white p-3 rounded-xl shadow-lg"
                     >
-                      <Shield className="w-6 h-6 text-green-500" />
+                      <UserCheck className="w-6 h-6 text-red-500" />
+                      {/* Static title above icon */}
+                      <div className="absolute -top-8 left-1/2 transform -translate-x-1/2 text-xs font-medium text-gray-700 whitespace-nowrap">
+                        Patient Care
+                      </div>
                     </motion.div>
 
+                    {/* Appointment Reminders (green) - Bottom position */}
                     <motion.div
                       animate={{ y: [0, -3, 0] }}
                       transition={{ duration: 2, repeat: Infinity, ease: "easeInOut", delay: 0.5 }}
                       className="absolute -bottom-2 left-1/2 transform -translate-x-1/2 bg-white p-3 rounded-xl shadow-lg"
                     >
-                      <Calendar className="w-6 h-6 text-purple-500" />
+                      <Bell className="w-6 h-6 text-green-500" />
+                      {/* Static title above icon */}
+                      <div className="absolute -top-8 left-1/2 transform -translate-x-1/2 text-xs font-medium text-gray-700 whitespace-nowrap">
+                        Appointment Reminders
+                      </div>
                     </motion.div>
 
+                    {/* Medical Dashboard (purple) - Left position */}
                     <motion.div
                       animate={{ y: [0, 4, 0] }}
                       transition={{ duration: 2, repeat: Infinity, ease: "easeInOut", delay: 1.5 }}
                       className="absolute top-1/2 -left-2 transform -translate-y-1/2 bg-white p-3 rounded-xl shadow-lg"
                     >
-                      <Clock className="w-6 h-6 text-orange-500" />
+                      <Activity className="w-6 h-6 text-purple-500" />
+                      {/* Static title above icon */}
+                      <div className="absolute -top-8 left-1/2 transform -translate-x-1/2 text-xs font-medium text-gray-700 whitespace-nowrap">
+                        Medical Dashboard
+                      </div>
                     </motion.div>
                   </div>
                 </motion.div>

@@ -23,6 +23,9 @@ import EmergencyNotice from './components/EmergencyNotice.tsx';
 // CSS imports
 import './styles/flags.css';
 
+// Constants
+const DEFAULT_CONSULTATION_FEE = 35; // Default consultation fee - will be updated from API response
+
 // Animated Tick Component
 const AnimatedTick = ({ size = 32, className = '', color = 'text-green-600' }) => {
   const [isVisible, setIsVisible] = useState(false);
@@ -423,7 +426,7 @@ const useCurrentLocationOSM = () => {
         `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}&addressdetails=1`,
         {
           headers: {
-            'User-Agent': 'SouthDoc-Booking-App/1.0 (contact@southdoc.ie)' // Required by Nominatim
+            'User-Agent': 'Booking-App/1.0 (contact@Practice.ie)' // Required by Nominatim
           }
         }
       );
@@ -999,7 +1002,7 @@ export default function CareHQBooking() {
   const [isLoadingDropdowns, setIsLoadingDropdowns] = useState(false);
 
   // Payment-related state
-  const [paymentAmount, setPaymentAmount] = useState(50); // Default consultation fee
+  const [paymentAmount, setPaymentAmount] = useState(DEFAULT_CONSULTATION_FEE); // Default consultation fee - will be updated from API
   const [isProcessingPayment, setIsProcessingPayment] = useState(false);
   const [paymentError, setPaymentError] = useState(null);
   const [paymentSuccess, setPaymentSuccess] = useState(false);
@@ -1085,11 +1088,17 @@ export default function CareHQBooking() {
 
   // Calculate payment amount based on appointment type
   const calculatePaymentAmount = () => {
+    // For virtual appointments, check if we have a specific virtual price from API
     if (isVirtualAppointment()) {
-      return 35; // Virtual consultations
+      // Use dynamic pricing from API response, fallback to current paymentAmount
+      return paymentAmount || DEFAULT_CONSULTATION_FEE; // Use API value or fallback to default
     } else {
+      // For face-to-face appointments, use clinic-specific pricing or API default
+      if (selectedClinic?.advancePaymentValue) {
+        return selectedClinic.advancePaymentValue;
+      }
       // Use the payment amount from AdvPayment (set in fetchTreatmentCentres)
-      return paymentAmount || 45; // Default to 45 if no AdvPayment received
+      return paymentAmount || DEFAULT_CONSULTATION_FEE; // Default fallback if no AdvPayment received
     }
   };
 
@@ -1209,17 +1218,36 @@ export default function CareHQBooking() {
   const getClinicsData = () => {
     if (treatmentCentres.length > 0) {
       // Transform treatment centres data to match expected clinic structure
-      return treatmentCentres.map((centre, index) => ({
-        id: centre.TrCenterID || index + 1,
-        name: centre.TrCentreName || 'Unknown Centre',
-        distance: centre.DistanceKMs ? `${centre.DistanceKMs} km` : 'N/A',
-        direction: centre.Direction || 'No directions available',
-        address: centre.Address || '',
-        price: `€${paymentAmount}`, // Use the payment amount from AdvPayment
-        advancePayment: `€${paymentAmount}`,
-        advancePaymentValue: paymentAmount,
-        rating: 4.8
-      }));
+      return treatmentCentres.map((centre, index) => {
+        // Extract dynamic price from centre data or use default
+        let clinicPrice = paymentAmount; // Default fallback
+        let priceDisplay = `€${paymentAmount}`;
+
+        // Check for AdvPayment in centre data
+        if (centre.AdvPayment) {
+          if (typeof centre.AdvPayment === 'string') {
+            // Extract numeric value from string like "€ 20"
+            const numericValue = parseInt(centre.AdvPayment.replace(/[^0-9]/g, '')) || paymentAmount;
+            clinicPrice = numericValue;
+            priceDisplay = centre.AdvPayment;
+          } else if (typeof centre.AdvPayment === 'number') {
+            clinicPrice = centre.AdvPayment;
+            priceDisplay = `€${centre.AdvPayment}`;
+          }
+        }
+
+        return {
+          id: centre.TrCenterID || index + 1,
+          name: centre.TrCentreName || 'Unknown Centre',
+          distance: centre.DistanceKMs ? `${centre.DistanceKMs} km` : 'N/A',
+          direction: centre.Direction || 'No directions available',
+          address: centre.Address || '',
+          price: priceDisplay, // Dynamic price from webhook response
+          advancePayment: priceDisplay,
+          advancePaymentValue: clinicPrice,
+          rating: 4.8
+        };
+      });
     }
 
     // Return empty array if no treatment centres available (don't use dummy data)
@@ -1902,7 +1930,7 @@ export default function CareHQBooking() {
       console.log('🚨 Emergency priority detected - showing message');
     } else if (hasUrgent) {
       setIsEmergencyOrUrgent(true);
-      setPriorityMessage('If your reason for contacting us is urgent, please call **📞 0818 355 999');
+      setPriorityMessage('If your reason for contacting us is urgent, please call **📞 0818 123 456');
       setPriorityMessageColor('text-yellow-600 bg-yellow-50 border-yellow-200');
       console.log('⚠️ Urgent priority detected - showing message');
     } else {
@@ -2064,6 +2092,7 @@ export default function CareHQBooking() {
         "TrCentreName": bookingData.TrCentreName || selectedClinic?.name || "",
         "PatientName": bookingData.PatientName || `${formData.firstName} ${formData.lastName}`.trim() || "",
         "ContactNo": bookingData.ContactNo || formData.phoneNumber || "",
+        "Email": bookingData.Email || formData.email || "",
         "CaseNo": bookingData.CaseNo || "",
         "AppointmentID": bookingData.AppointmentID || 0,
         "AppointmentType": bookingData.AppointmentType || (formData.appointmentType === "1" ? "Video Consult" : "Face 2 Face"),
@@ -2304,13 +2333,13 @@ export default function CareHQBooking() {
     }
 
     if (age < 3) {
-      setAgeValidationError('Patients under 3 years of age cannot book online. Please call 📞 0818 355 999');
+      setAgeValidationError('Patients under 3 years of age cannot book online. Please call 📞 0818 123 456');
       setIsAgeInvalid(true);
       return false;
     }
 
     if (age > 75) {
-      setAgeValidationError('Patients over 75 years of age cannot book online. Please call 📞 0818 355 999');
+      setAgeValidationError('Patients over 75 years of age cannot book online. Please call 📞 0818 123 456');
       setIsAgeInvalid(true);
       return false;
     }
@@ -2435,7 +2464,7 @@ export default function CareHQBooking() {
   // Add currentLanguage as a dependency to any useEffect that renders UI text
   useEffect(() => {
     // Example of an effect that should re-run when language changes
-    document.title = t('appTitle') || 'SouthDoc Booking';
+    document.title = t('appTitle') || 'Booking';
   }, [currentLanguage]);
 
   // Add a blur handler for the text input
@@ -2653,6 +2682,12 @@ export default function CareHQBooking() {
       setSelectedClinic(clinic);
       setSelectedSlot(null);
 
+      // Update payment amount with clinic-specific price
+      if (clinic.advancePaymentValue && !isVirtualAppointment()) {
+        console.log('💰 Updating payment amount for selected clinic:', clinic.advancePaymentValue);
+        setPaymentAmount(clinic.advancePaymentValue);
+      }
+
       // Fetch appointment slots for the selected clinic (only if not already loading or loaded)
       if (clinic && clinic.id && !isLoadingSlots && !appointmentSlots[clinic.id]) {
         console.log('🏥 Fetching slots for selected clinic:', clinic.name, 'ID:', clinic.id, 'Type:', typeof clinic.id);
@@ -2824,7 +2859,7 @@ export default function CareHQBooking() {
     setSelectedClinic(null);
     setSelectedSlot(null);
     setBookingReference('');
-    setPaymentAmount(50);
+    setPaymentAmount(DEFAULT_CONSULTATION_FEE); // Reset to default, will be updated from API
     setPaymentError(null);
     setPaymentSuccess(false);
     setValidationErrors({});
@@ -3489,7 +3524,7 @@ export default function CareHQBooking() {
               setPaymentAmount(numericValue);
             } else {
               console.log('⚠️ No AdvPayment found in response, using default amount');
-              setPaymentAmount(45); // Default fallback
+              setPaymentAmount(DEFAULT_CONSULTATION_FEE); // Default fallback
             }
           } else {
             console.log('❌ No treatment centres found in parsed response');
@@ -4696,7 +4731,7 @@ const handleContinueToBooking = async () => {
       {/* GP Logo on the Left */}
       <div className="flex items-center">
         <img
-          src="/GPLogo.png"
+          src="/GPOpenApp.png"
           alt="GP Logo"
           className="h-10 sm:h-12 w-auto animate-slide-in-left"
         />
@@ -4708,7 +4743,7 @@ const handleContinueToBooking = async () => {
         <div className="hidden lg:flex items-center text-white text-left max-w-md flex-shrink-0">
           <div>
             <div className="font-bold text-sm lg:text-base leading-tight">
-              SouthDoc is a GP out-of-hours service
+              GP out-of-hours service
             </div>
             <div className="text-xs lg:text-sm opacity-90 leading-tight mt-1">
               for medical issues that cannot wait for daytime practice
@@ -4772,7 +4807,7 @@ const handleContinueToBooking = async () => {
                       title="🚨 Emergency Notice"
                       message="If you are experiencing a medical emergency, please call"
                       emergencyNumber="999"
-                      urgentNumber="0818 355 999"
+                      urgentNumber="0818 123 456"
                       onClose={() => setShowEmergencyNotice(false)}
                     />
                   // still the same siise</div>
@@ -4805,6 +4840,17 @@ const handleContinueToBooking = async () => {
                           onClick={() => {
                             setFormData(prev => ({ ...prev, reasonForContact: [] }));
                             setReasonTextSearch('');
+                            // Clear validation errors for reason for consultation
+                            setValidationErrors(prev => ({
+                              ...prev,
+                              reasonForContact: undefined
+                            }));
+                            // Reset complaint-related states
+                            setIsEmergencyOrUrgent(false);
+                            setPriorityMessage('');
+                            setPriorityMessageColor('');
+                            setSelectedComplaint(null);
+                            console.log('🔄 Reason for Contact cleared - text field, dropdown, and errors cleared');
                           }}
                           className={`${theme.accent} ${theme.primaryHover} text-xs sm:text-sm font-medium rounded-lg transition-colors px-3 py-1 self-start sm:self-auto`}
                         >
@@ -4853,11 +4899,18 @@ const handleContinueToBooking = async () => {
                             type="button"
                             onClick={() => {
                               setFormData(prev => ({ ...prev, reasonForContact: [] }));
+                              setReasonTextSearch('');
+                              // Clear validation errors for reason for consultation
+                              setValidationErrors(prev => ({
+                                ...prev,
+                                reasonForContact: undefined
+                              }));
                               // Reset complaint-related states when clearing selection
                               setIsEmergencyOrUrgent(false);
                               setPriorityMessage('');
                               setPriorityMessageColor('');
                               setSelectedComplaint(null);
+                              console.log('🔄 Reason for Contact cleared - text field, dropdown, and errors cleared');
                             }}
                             // disabled={isEmergencyOrUrgent || isLoadingDropdowns}
                             className={`${theme.accent} ${theme.primaryHover} text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed transition-colors`}
@@ -5024,7 +5077,7 @@ const handleContinueToBooking = async () => {
                       <div>
                         <div className="flex items-center justify-between mb-2">
                           <label className="block text-sm font-medium text-gray-700">GMS Number</label>
-                          <div className="relative">
+                          <div className="relative overflow-visible">
                             {/* Only show Info icon when GMS validation data is available */}
                             {gmsValidationData && (
                               <Info
@@ -5037,7 +5090,7 @@ const handleContinueToBooking = async () => {
 
                             {/* GMS Info Popup - Mobile Responsive */}
                             {showGmsInfo && gmsValidationData && (
-                              <div className="absolute right-0 top-6 z-[60] w-72 sm:w-80 md:w-96 bg-white border border-gray-200 rounded-lg shadow-xl p-3 sm:p-4 max-w-[calc(100vw-2rem)]">
+                              <div className="absolute z-[60] w-72 sm:w-80 md:w-96 bg-white border border-gray-200 rounded-lg shadow-xl p-3 sm:p-4 max-w-[calc(100vw-2rem)]">
                                 <h3 className="font-semibold text-gray-800 mb-3 text-xs sm:text-sm border-b pb-2">GMS Validation Details</h3>
                                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3 text-xs">
                                   <div className="space-y-1.5 sm:space-y-2">
@@ -5304,14 +5357,20 @@ const handleContinueToBooking = async () => {
                         
                         {/* Unknown GP message */}
                         {isUnknownGPChecked && (
-                          <div className={`mt-3 p-3 ${theme.accentBg} ${theme.border} rounded-lg`}>
-                            <p className={`text-xs sm:text-sm ${theme.text} break-words`}>
-                              Outcome of this appointment won't send to your GP
-                            </p>
+                          <div className="mt-3 p-3 text-yellow-600 bg-yellow-50 border-yellow-200">
+                            <div className="flex items-start space-x-2">
+                              <span className="text-blue-600 text-lg">⚠️</span>
+                              <div className="flex-1">
+                                <p className="text-sm mt-1">
+                                  Outcome of this appointment won't send to your GP
+                                </p>
+                              </div>
+                            </div>
                           </div>
                         )}
                       </div>
                     </div>
+                    
 
 
                   </div>
@@ -5809,23 +5868,33 @@ const handleContinueToBooking = async () => {
                       <div
                         key={clinic.id}
                         onClick={() => handleClinicSelect(clinic)}
-                        className={`p-3 sm:p-4 border-2 rounded-lg cursor-pointer transition-all hover:shadow-md min-h-[80px] sm:min-h-[60px] ${selectedClinic?.id === clinic.id
+                        className={`p-3 sm:p-4 border-2 rounded-lg cursor-pointer transition-all hover:shadow-md min-h-[80px] sm:min-h-[60px] relative group ${selectedClinic?.id === clinic.id
                           ? `${theme.border} ${theme.accentBg}`
                           : 'border-gray-200 hover:border-gray-300'
                           }`}
+                        title={clinic.direction && clinic.direction !== 'No directions available' ? clinic.direction : ''}
                       >
                         <h5 className="font-semibold text-xs sm:text-sm text-gray-900 mb-1 break-words">{clinic.name}</h5>
                         <div className="text-xs text-gray-600 mb-2">
                           <div className="flex items-center justify-between mb-1">
                             <span className="text-xs">{clinic.distance}</span>
                           </div>
-                          {/* Direction information for treatment centres */}
+                          {/* Direction information for treatment centres - simplified display */}
                           {clinic.direction && clinic.direction !== 'No directions available' && (
-                            <div className="text-xs text-gray-500 mt-1 line-clamp-2 break-words" title={clinic.direction}>
+                            <div className="text-xs text-gray-500 mt-1 line-clamp-2 break-words">
                               📍 {clinic.direction.length > 40 ? `${clinic.direction.substring(0, 40)}...` : clinic.direction}
                             </div>
                           )}
                         </div>
+
+                        {/* Hover tooltip for full directions */}
+                        {clinic.direction && clinic.direction !== 'No directions available' && clinic.direction.length > 40 && (
+                          <div className="absolute bottom-full left-0 mb-2 w-64 p-3 bg-gray-900 text-white text-xs rounded-lg shadow-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none z-10">
+                            <div className="font-medium mb-1">📍 Directions:</div>
+                            <div>{clinic.direction}</div>
+                            <div className="absolute top-full left-4 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-gray-900"></div>
+                          </div>
+                        )}
                       </div>
                     ))}
 
@@ -6095,13 +6164,13 @@ const handleContinueToBooking = async () => {
                   </div>
                 )}
 
-                {/* Payment and Booking Summary - Side by Side Layout */}
+                {/* Payment and Booking Summary - Fully Responsive Layout */}
                 {((isVirtualAppointment() && selectedSlot) || (selectedClinic && selectedSlot)) && (
-                  <div className="grid md:grid-cols-2 gap-4 md:gap-8 pt-6">
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-8 pt-6">
                     {/* Left Side - Payment Information */}
-                    <div className="bg-white border border-gray-200 rounded-lg p-4 sm:p-6">
-                      <div className="mb-6">
-                        <div className="flex justify-between items-center mb-4">
+                    <div className="bg-white border border-gray-200 rounded-lg p-3 sm:p-4 lg:p-6 order-2 lg:order-1">
+                      <div className="mb-4 lg:mb-6">
+                        <div className="flex justify-between items-center mb-2 lg:mb-4">
                           {/* <span className="text-sm font-medium text-gray-700">Consultation Fee:</span> */}
                           {/* <span className="text-lg font-bold text-gray-900">€{paymentAmount}</span> */}
                         </div>
@@ -6125,26 +6194,26 @@ const handleContinueToBooking = async () => {
                     </div>
 
                     {/* Right Side - Booking Summary */}
-                    <div className={`p-4 sm:p-6 rounded-lg ${theme.accentBg} border border-gray-200`}>
-                      <div className="flex items-center space-x-2 mb-6">
-                        
-                        <h4 className="text-lg font-semibold text-gray-900">Booking Summary</h4>
+                    <div className={`p-3 sm:p-4 lg:p-6 rounded-lg ${theme.accentBg} border border-gray-200 order-1 lg:order-2`}>
+                      <div className="flex items-center space-x-2 mb-4 lg:mb-6">
+
+                        <h4 className="text-base sm:text-lg font-semibold text-gray-900">Booking Summary</h4>
                       </div>
 
-                      <div className="space-y-3 text-sm text-gray-600 mb-6">
-                        <p>👤 Patient: {formData.fullName || `${formData.firstName} ${formData.lastName}`.trim() || 'Not specified'}</p>
-                        
+                      <div className="space-y-2 sm:space-y-3 text-xs sm:text-sm text-gray-600 mb-4 lg:mb-6">
+                        <p className="break-words">👤 Patient: {formData.fullName || `${formData.firstName} ${formData.lastName}`.trim() || 'Not specified'}</p>
+
                         <p>📋 Type: {getAppointmentTypeDisplay()}</p>
                         {!isVirtualAppointment() && selectedClinic && (
-                          <p>🏥 Clinic: {selectedClinic.name}</p>
+                          <p className="break-words">🏥 Clinic: {selectedClinic.name}</p>
                         )}
                         <p>🕐 Time: {selectedSlot}</p>
-                        <p>📧 Email: {formData.email || 'Not specified'}</p>
-                        <p>📞 Phone: {formData.phoneNumber || 'Not specified'}</p>
+                        <p className="break-words">📧 Email: {formData.email || 'Not specified'}</p>
+                        <p className="break-words">📞 Phone: {formData.phoneNumber || 'Not specified'}</p>
 
                         {isVirtualAppointment() && (
-                          <div className={`mt-4 p-3 ${theme.accentBg} rounded-lg`}>
-                            <p className={`${theme.text} font-medium text-sm`}>
+                          <div className={`mt-3 sm:mt-4 p-2 sm:p-3 ${theme.accentBg} rounded-lg`}>
+                            <p className={`${theme.text} font-medium text-xs sm:text-sm break-words`}>
                               {formData.appointmentType === 'vc'
                                 ? '💻 Video link will be sent to your email'
                                 : '📞 You will receive a call at the scheduled time'
@@ -6236,13 +6305,6 @@ const handleContinueToBooking = async () => {
                   </span>
                 </div>
 
-                {!isVirtualAppointment() && selectedClinic && (
-                  <div className="flex justify-between items-center">
-                    <span className="text-gray-600">Clinic:</span>
-                    <span className="font-medium text-gray-900">{selectedClinic.name}</span>
-                  </div>
-                )}
-
                 {selectedSlot && (
                   <div className="flex justify-between items-center">
                     <span className="text-gray-600">Time:</span>
@@ -6250,10 +6312,26 @@ const handleContinueToBooking = async () => {
                   </div>
                 )}
 
-                <div className="flex justify-between items-center pt-2 h-16 border-t border-gray-200">
-                  <span className="text-gray-600">Amount:</span>
-                  <span className={`font-bold text-lg ${theme.accent}`}>
-                    {isVirtualAppointment() ? '£35' : (selectedClinic?.price || '£35')}
+                {!isVirtualAppointment() && selectedClinic && (
+                  <>
+                    <div className="flex justify-between items-center">
+                      <span className="text-gray-600">Clinic:</span>
+                      <span className="font-medium text-gray-900">{selectedClinic.name}</span>
+                    </div>
+                    {selectedClinic.direction && selectedClinic.direction !== 'No directions available' && (
+                      <div className="mt-1">
+                        <span className="text-xs text-gray-500 break-words">
+                          📍 {selectedClinic.direction}
+                        </span>
+                      </div>
+                    )}
+                  </>
+                )}
+
+                <div className="flex justify-between items-center pt-2 h-12 sm:h-16 border-t border-gray-200">
+                  <span className="text-gray-600 text-sm sm:text-base">Amount:</span>
+                  <span className={`font-bold text-base sm:text-lg ${theme.accent}`}>
+                    {isVirtualAppointment() ? `€${paymentAmount}` : (selectedClinic?.price || `€${paymentAmount}`)}
                   </span>
                 </div>
               </div>
