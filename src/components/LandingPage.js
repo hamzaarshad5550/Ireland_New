@@ -90,6 +90,49 @@ const FlashAnimation = ({ text, className, delay = 0 }) => {
   );
 };
 
+// Orbiting Title Animation Component
+const OrbitingTitleDisplay = () => {
+  const titles = [
+    "Online Consultation",
+    "Patient Care",
+    "Appointment Reminders",
+    "Medical Dashboard"
+  ];
+
+  const [currentTitleIndex, setCurrentTitleIndex] = useState(0);
+
+  useEffect(() => {
+    // Each title shows for 5 seconds (matching the 20-second orbit cycle / 4 titles)
+    const interval = setInterval(() => {
+      setCurrentTitleIndex((prev) => (prev + 1) % titles.length);
+    }, 5000);
+
+    return () => clearInterval(interval);
+  }, []);
+
+  return (
+    <div className="absolute -bottom-16 left-1/2 transform -translate-x-1/2 h-8 flex items-center justify-center">
+      {titles.map((title, index) => (
+        <motion.div
+          key={title}
+          initial={{ opacity: 0, y: 10 }}
+          animate={{
+            opacity: currentTitleIndex === index ? 1 : 0,
+            y: currentTitleIndex === index ? 0 : 10
+          }}
+          transition={{
+            duration: 0.6,
+            ease: "easeInOut"
+          }}
+          className="absolute text-sm sm:text-base font-semibold text-gray-700 whitespace-nowrap"
+        >
+          {title}
+        </motion.div>
+      ))}
+    </div>
+  );
+};
+
 // Hero Section Component
 const HeroSection = ({ onOpenAppointment }) => {
   return (
@@ -265,66 +308,169 @@ const HeroSection = ({ onOpenAppointment }) => {
                   <Stethoscope className="w-24 h-24 sm:w-32 sm:h-32 lg:w-40 lg:h-40 text-blue-600" />
                 </motion.div>
 
-                {/* Orbiting Elements */}
+                {/* Orbital Trail Effect */}
                 <motion.div
                   animate={{ rotate: 360 }}
-                  transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
-                  className="absolute inset-0"
+                  transition={{
+                    duration: 20,
+                    repeat: Infinity,
+                    ease: "linear"
+                  }}
+                  className="absolute inset-0 opacity-20"
+                >
+                  <div className="absolute inset-4 border border-dashed border-blue-300 rounded-full"></div>
+                </motion.div>
+
+                {/* Orbiting Elements - Enhanced Fluid Animation */}
+                <motion.div
+                  animate={{ rotate: 360 }}
+                  transition={{
+                    duration: 20,
+                    repeat: Infinity,
+                    ease: "linear"
+                  }}
+                  className="absolute inset-0 orbit-container"
                 >
                   <div className="relative w-full h-full">
                     {/* Online Consultation (orange) - Top position */}
                     <motion.div
-                      animate={{ y: [0, -5, 0] }}
-                      transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
-                      className="absolute -top-2 left-1/2 transform -translate-x-1/2 bg-white p-3 rounded-xl shadow-lg"
+                      animate={{
+                        y: [0, -8, 0],
+                        rotate: [0, -360, -720]
+                      }}
+                      transition={{
+                        duration: 20,
+                        repeat: Infinity,
+                        ease: "linear"
+                      }}
+                      className="absolute -top-4 sm:-top-2 left-1/2 transform -translate-x-1/2 orbit-element"
                     >
-                      <Video className="w-6 h-6 text-orange-500" />
-                      {/* Static title above icon */}
-                      <div className="absolute -top-8 left-1/2 transform -translate-x-1/2 text-xs font-medium text-gray-700 whitespace-nowrap">
-                        Online Consultation
-                      </div>
+                      <motion.div
+                        animate={{
+                          scale: [1, 1.1, 1],
+                          boxShadow: [
+                            "0 4px 6px -1px rgba(0, 0, 0, 0.1)",
+                            "0 10px 15px -3px rgba(0, 0, 0, 0.1)",
+                            "0 4px 6px -1px rgba(0, 0, 0, 0.1)"
+                          ]
+                        }}
+                        transition={{
+                          duration: 3,
+                          repeat: Infinity,
+                          ease: "easeInOut"
+                        }}
+                        className="bg-white p-3 sm:p-4 rounded-xl shadow-lg border border-orange-100 hover:shadow-xl transition-shadow duration-300"
+                      >
+                        <Video className="w-5 h-5 sm:w-6 sm:h-6 text-orange-500" />
+                      </motion.div>
                     </motion.div>
 
                     {/* Patient Care (red) - Right position */}
                     <motion.div
-                      animate={{ y: [0, 5, 0] }}
-                      transition={{ duration: 2, repeat: Infinity, ease: "easeInOut", delay: 1 }}
-                      className="absolute top-1/2 -right-2 transform -translate-y-1/2 bg-white p-3 rounded-xl shadow-lg"
+                      animate={{
+                        x: [0, 8, 0],
+                        rotate: [0, -360, -720]
+                      }}
+                      transition={{
+                        duration: 20,
+                        repeat: Infinity,
+                        ease: "linear"
+                      }}
+                      className="absolute top-1/2 -right-4 sm:-right-2 transform -translate-y-1/2 orbit-element"
                     >
-                      <UserCheck className="w-6 h-6 text-red-500" />
-                      {/* Static title above icon */}
-                      <div className="absolute -top-8 left-1/2 transform -translate-x-1/2 text-xs font-medium text-gray-700 whitespace-nowrap">
-                        Patient Care
-                      </div>
+                      <motion.div
+                        animate={{
+                          scale: [1, 1.1, 1],
+                          boxShadow: [
+                            "0 4px 6px -1px rgba(0, 0, 0, 0.1)",
+                            "0 10px 15px -3px rgba(0, 0, 0, 0.1)",
+                            "0 4px 6px -1px rgba(0, 0, 0, 0.1)"
+                          ]
+                        }}
+                        transition={{
+                          duration: 3,
+                          repeat: Infinity,
+                          ease: "easeInOut",
+                          delay: 1
+                        }}
+                        className="bg-white p-3 sm:p-4 rounded-xl shadow-lg border border-red-100 hover:shadow-xl transition-shadow duration-300"
+                      >
+                        <UserCheck className="w-5 h-5 sm:w-6 sm:h-6 text-red-500" />
+                      </motion.div>
                     </motion.div>
 
                     {/* Appointment Reminders (green) - Bottom position */}
                     <motion.div
-                      animate={{ y: [0, -3, 0] }}
-                      transition={{ duration: 2, repeat: Infinity, ease: "easeInOut", delay: 0.5 }}
-                      className="absolute -bottom-2 left-1/2 transform -translate-x-1/2 bg-white p-3 rounded-xl shadow-lg"
+                      animate={{
+                        y: [0, 8, 0],
+                        rotate: [0, -360, -720]
+                      }}
+                      transition={{
+                        duration: 20,
+                        repeat: Infinity,
+                        ease: "linear"
+                      }}
+                      className="absolute -bottom-4 sm:-bottom-2 left-1/2 transform -translate-x-1/2 orbit-element"
                     >
-                      <Bell className="w-6 h-6 text-green-500" />
-                      {/* Static title above icon */}
-                      <div className="absolute -top-8 left-1/2 transform -translate-x-1/2 text-xs font-medium text-gray-700 whitespace-nowrap">
-                        Appointment Reminders
-                      </div>
+                      <motion.div
+                        animate={{
+                          scale: [1, 1.1, 1],
+                          boxShadow: [
+                            "0 4px 6px -1px rgba(0, 0, 0, 0.1)",
+                            "0 10px 15px -3px rgba(0, 0, 0, 0.1)",
+                            "0 4px 6px -1px rgba(0, 0, 0, 0.1)"
+                          ]
+                        }}
+                        transition={{
+                          duration: 3,
+                          repeat: Infinity,
+                          ease: "easeInOut",
+                          delay: 0.5
+                        }}
+                        className="bg-white p-3 sm:p-4 rounded-xl shadow-lg border border-green-100 hover:shadow-xl transition-shadow duration-300"
+                      >
+                        <Bell className="w-5 h-5 sm:w-6 sm:h-6 text-green-500" />
+                      </motion.div>
                     </motion.div>
 
                     {/* Medical Dashboard (purple) - Left position */}
                     <motion.div
-                      animate={{ y: [0, 4, 0] }}
-                      transition={{ duration: 2, repeat: Infinity, ease: "easeInOut", delay: 1.5 }}
-                      className="absolute top-1/2 -left-2 transform -translate-y-1/2 bg-white p-3 rounded-xl shadow-lg"
+                      animate={{
+                        x: [0, -8, 0],
+                        rotate: [0, -360, -720]
+                      }}
+                      transition={{
+                        duration: 20,
+                        repeat: Infinity,
+                        ease: "linear"
+                      }}
+                      className="absolute top-1/2 -left-4 sm:-left-2 transform -translate-y-1/2 orbit-element"
                     >
-                      <Activity className="w-6 h-6 text-purple-500" />
-                      {/* Static title above icon */}
-                      <div className="absolute -top-8 left-1/2 transform -translate-x-1/2 text-xs font-medium text-gray-700 whitespace-nowrap">
-                        Medical Dashboard
-                      </div>
+                      <motion.div
+                        animate={{
+                          scale: [1, 1.1, 1],
+                          boxShadow: [
+                            "0 4px 6px -1px rgba(0, 0, 0, 0.1)",
+                            "0 10px 15px -3px rgba(0, 0, 0, 0.1)",
+                            "0 4px 6px -1px rgba(0, 0, 0, 0.1)"
+                          ]
+                        }}
+                        transition={{
+                          duration: 3,
+                          repeat: Infinity,
+                          ease: "easeInOut",
+                          delay: 1.5
+                        }}
+                        className="bg-white p-3 sm:p-4 rounded-xl shadow-lg border border-purple-100 hover:shadow-xl transition-shadow duration-300"
+                      >
+                        <Activity className="w-5 h-5 sm:w-6 sm:h-6 text-purple-500" />
+                      </motion.div>
                     </motion.div>
                   </div>
                 </motion.div>
+
+                {/* Synchronized Title Display */}
+                <OrbitingTitleDisplay />
               </div>
             </motion.div>
           </div>

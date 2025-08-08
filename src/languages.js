@@ -92,7 +92,7 @@ export const translations = {
     streetRequired: 'Street name is required',
     
     // Other
-    appTitle: 'SouthDoc Booking'
+    appTitle: 'Appointment Booking'
   },
   
   ur: {
@@ -353,7 +353,7 @@ export const translations = {
     streetRequired: 'Tá ainm na sráide riachtanach',
     
     // Other
-    appTitle: 'Áirithint SouthDoc'
+    appTitle: 'Áirithint'
   }
 };
 

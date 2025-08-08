@@ -933,6 +933,10 @@ export default function CareHQBooking() {
   const [showTimer, setShowTimer] = useState(false); // New state to control timer visibility
   const timerRef = useRef(null);
 
+  // Refs to store current values for timer callbacks
+  const selectedSlotRef = useRef(null);
+  const reservedAppointmentRef = useRef(null);
+
   // Language state
   const [currentLanguage, setCurrentLanguage] = useState(() => {
     return getLanguageFromStorage();
@@ -2675,6 +2679,8 @@ export default function CareHQBooking() {
 
 
   const handleClinicSelect = (clinic) => {
+    // Note: Slot release now happens only when timer expires, not on clinic change
+
     if (selectedClinic?.id === clinic.id) {
       setSelectedClinic(null);
       setSelectedSlot(null);
@@ -2755,11 +2761,47 @@ export default function CareHQBooking() {
     timerRef.current = setInterval(() => {
       setTimeRemaining(prev => {
         if (prev <= 1) {
-          // Timer expired
+          // Timer expired - trigger slot release
           setIsTimerActive(false);
           clearInterval(timerRef.current);
-          console.log('⏰ Timer expired - appointment session ended');
-          // You could add logic here to redirect or show a message
+          console.log('⏰ Timer expired - releasing slot');
+
+          // Use setTimeout to ensure state is current when releasing slot
+          setTimeout(() => {
+            console.log('⏰ Timer expired callback executing...');
+
+            // Get current values from refs (to avoid stale closure)
+            const currentSlot = selectedSlotRef.current;
+            const currentReservation = reservedAppointmentRef.current;
+
+            console.log('🔍 Current state values from refs:', {
+              selectedSlot: currentSlot,
+              reservedAppointment: currentReservation,
+              hasSlot: !!currentSlot,
+              hasVisitID: !!currentReservation?.VisitID,
+              hasAppointmentID: !!currentReservation?.AppointmentID,
+              visitID: currentReservation?.VisitID,
+              appointmentID: currentReservation?.AppointmentID
+            });
+
+            if (currentSlot && currentReservation?.VisitID && currentReservation?.AppointmentID) {
+              console.log('🚀 All conditions met - Triggering slot release for timer expiration');
+              console.log('📞 Calling releaseSlot with:', {
+                visitID: currentReservation.VisitID,
+                appointmentID: currentReservation.AppointmentID
+              });
+              releaseSlot(currentReservation.VisitID, currentReservation.AppointmentID);
+            } else {
+              console.log('⚠️ Cannot release slot - missing required data');
+              console.log('❌ Missing data details:', {
+                hasSlot: !!currentSlot,
+                hasReservation: !!currentReservation,
+                hasVisitID: !!currentReservation?.VisitID,
+                hasAppointmentID: !!currentReservation?.AppointmentID
+              });
+            }
+          }, 100);
+
           return 0;
         }
         return prev - 1;
@@ -2782,7 +2824,44 @@ export default function CareHQBooking() {
         if (prev <= 1) {
           setIsTimerActive(false);
           clearInterval(timerRef.current);
-          console.log('⏰ Timer expired - appointment session ended');
+          console.log('⏰ Timer expired - releasing slot');
+
+          // Use setTimeout to ensure state is current when releasing slot
+          setTimeout(() => {
+            console.log('⏰ Reset timer expired callback executing...');
+
+            // Get current values from refs (to avoid stale closure)
+            const currentSlot = selectedSlotRef.current;
+            const currentReservation = reservedAppointmentRef.current;
+
+            console.log('🔍 Current state values from refs:', {
+              selectedSlot: currentSlot,
+              reservedAppointment: currentReservation,
+              hasSlot: !!currentSlot,
+              hasVisitID: !!currentReservation?.VisitID,
+              hasAppointmentID: !!currentReservation?.AppointmentID,
+              visitID: currentReservation?.VisitID,
+              appointmentID: currentReservation?.AppointmentID
+            });
+
+            if (currentSlot && currentReservation?.VisitID && currentReservation?.AppointmentID) {
+              console.log('🚀 All conditions met - Triggering slot release for reset timer expiration');
+              console.log('📞 Calling releaseSlot with:', {
+                visitID: currentReservation.VisitID,
+                appointmentID: currentReservation.AppointmentID
+              });
+              releaseSlot(currentReservation.VisitID, currentReservation.AppointmentID);
+            } else {
+              console.log('⚠️ Cannot release slot - missing required data');
+              console.log('❌ Missing data details:', {
+                hasSlot: !!currentSlot,
+                hasReservation: !!currentReservation,
+                hasVisitID: !!currentReservation?.VisitID,
+                hasAppointmentID: !!currentReservation?.AppointmentID
+              });
+            }
+          }, 100);
+
           return 0;
         }
         return prev - 1;
@@ -2805,6 +2884,8 @@ export default function CareHQBooking() {
     const remainingSeconds = seconds % 60;
     return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`;
   };
+
+
 
   // Cleanup timer on component unmount
   useEffect(() => {
@@ -2850,7 +2931,9 @@ export default function CareHQBooking() {
   };
 
   // Handle success popup close
-    const handleSuccessPopupClose = async () => {
+    const handleSuccessPopupClose = () => {
+    // Note: Slot release now happens only when timer expires, not on reset
+
     // Remove the booking confirmation call - just do the reset
     setShowSuccessPopup(false);
     setCurrentStep(1);
@@ -3110,6 +3193,15 @@ export default function CareHQBooking() {
   const [isBookingAppointment, setIsBookingAppointment] = useState(false);
   const [bookingError, setBookingError] = useState('');
   const [reservedAppointment, setReservedAppointment] = useState(null);
+
+  // Update refs when state changes for timer callbacks
+  useEffect(() => {
+    selectedSlotRef.current = selectedSlot;
+  }, [selectedSlot]);
+
+  useEffect(() => {
+    reservedAppointmentRef.current = reservedAppointment;
+  }, [reservedAppointment]);
 
   // Process appointment slots and properly group by date
   const processAppointmentSlots = (rawSlots) => {
@@ -3978,6 +4070,9 @@ export default function CareHQBooking() {
       setBookingError('Missing required booking information. Please try again.');
       return;
     }
+
+    // Note: Slot release now happens only when timer expires, not on slot change
+
     // If changing slots and timer is active, reset the timer
     if (selectedSlot && selectedSlot !== slot && isTimerActive) {
       console.log('🔄 Slot changed, resetting timer');
@@ -4318,6 +4413,79 @@ export default function CareHQBooking() {
     
     // Format to international standard
     return formatIrishMobileNumber(phoneNumber);
+  };
+
+  // Function to release a previously selected slot
+  const releaseSlot = async (visitID, appointmentID) => {
+    try {
+      console.log('🔄 RELEASE SLOT FUNCTION CALLED!');
+      console.log('🔄 Releasing slot with parameters:', { visitID, appointmentID });
+      console.log('🔄 Parameter types:', {
+        visitIDType: typeof visitID,
+        appointmentIDType: typeof appointmentID
+      });
+
+      const releasePayload = {
+        "workflowtype": "appointment_slots",
+        "type": "release_slot",
+        "visitID": visitID,
+        "appointmentID": appointmentID
+      };
+
+      console.log('📤 Release slot payload:', JSON.stringify(releasePayload, null, 2));
+      console.log('🌐 Webhook URL:', WEBHOOK_CONFIG.APPOINTMENT_WEBHOOK);
+
+      const response = await makeWebhookRequest(WEBHOOK_CONFIG.APPOINTMENT_WEBHOOK, releasePayload);
+
+      if (response.ok) {
+        // Clone response to allow multiple reads
+        const responseClone = response.clone();
+
+        try {
+          // First try to parse as JSON
+          const responseData = await response.json();
+          console.log('✅ Slot released successfully. Response:', responseData);
+
+          // Handle different response formats
+          if (Array.isArray(responseData) && responseData.length > 0) {
+            const firstResult = responseData[0];
+            if (typeof firstResult.data === 'string') {
+              try {
+                const parsedData = JSON.parse(firstResult.data);
+                console.log('📋 Parsed release response data:', parsedData);
+              } catch (parseError) {
+                console.log('📋 Release response (string):', firstResult.data);
+              }
+            } else {
+              console.log('📋 Release response (object):', firstResult);
+            }
+          } else {
+            console.log('📋 Direct release response:', responseData);
+          }
+        } catch (jsonError) {
+          console.log('⚠️ JSON parsing failed, trying as text:', jsonError.message);
+          try {
+            // Use cloned response for text parsing
+            const responseText = await responseClone.text();
+            console.log('📋 Release response (text):', responseText);
+          } catch (textError) {
+            console.error('❌ Failed to read response as text:', textError);
+          }
+        }
+      } else {
+        console.warn('⚠️ Failed to release slot:', response.status, response.statusText);
+        // Try to get error response body
+        try {
+          const errorText = await response.text();
+          console.warn('📋 Error response body:', errorText);
+        } catch (readError) {
+          console.warn('📋 Could not read error response body');
+        }
+      }
+    } catch (error) {
+      console.error('❌ Error releasing slot:', error);
+      // Don't throw error as this is a cleanup operation
+    }
   };
 
   // Function to generate patient registration payload
@@ -4827,36 +4995,39 @@ const handleContinueToBooking = async () => {
 
 
 
-                  <div className="space-y-4 sm:space-y-6">
+                  <div className="space-y-4 sm:space-y-4">
                     {/* Reason for Contact Section */}
-                    <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-4 space-y-2 sm:space-y-0">
-                      <label className="block text-base sm:text-lg font-semibold text-gray-900">
-                        {t('reasonForContact')} <span className="text-red-500">*</span>
-                      </label>
-                      {/* Only show Clear Selection button when there are selections or text search */}
-                      {((formData.reasonForContact && Array.isArray(formData.reasonForContact) && formData.reasonForContact.length > 0) || reasonTextSearch.trim().length > 0) && (
-                        <button
-                          type="button"
-                          onClick={() => {
-                            setFormData(prev => ({ ...prev, reasonForContact: [] }));
-                            setReasonTextSearch('');
-                            // Clear validation errors for reason for consultation
-                            setValidationErrors(prev => ({
-                              ...prev,
-                              reasonForContact: undefined
-                            }));
-                            // Reset complaint-related states
-                            setIsEmergencyOrUrgent(false);
-                            setPriorityMessage('');
-                            setPriorityMessageColor('');
-                            setSelectedComplaint(null);
-                            console.log('🔄 Reason for Contact cleared - text field, dropdown, and errors cleared');
-                          }}
-                          className={`${theme.accent} ${theme.primaryHover} text-xs sm:text-sm font-medium rounded-lg transition-colors px-3 py-1 self-start sm:self-auto`}
-                        >
-                          {t('clearSelection')}
-                        </button>
-                      )}
+                    <div className="">
+                      {/* Label and Clear Selection button - Horizontal alignment */}
+                      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-2 gap-1 sm:gap-0">
+                        <label className="block text-sm font-medium text-gray-700">
+                          {t('reasonForContact')} <span className="text-red-500">*</span>
+                        </label>
+                        {/* Only show Clear Selection button when there are selections or text search */}
+                        {((formData.reasonForContact && Array.isArray(formData.reasonForContact) && formData.reasonForContact.length > 0) || reasonTextSearch.trim().length > 0) && (
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setFormData(prev => ({ ...prev, reasonForContact: [] }));
+                              setReasonTextSearch('');
+                              // Clear validation errors for reason for consultation
+                              setValidationErrors(prev => ({
+                                ...prev,
+                                reasonForContact: undefined
+                              }));
+                              // Reset complaint-related states
+                              setIsEmergencyOrUrgent(false);
+                              setPriorityMessage('');
+                              setPriorityMessageColor('');
+                              setSelectedComplaint(null);
+                              console.log('🔄 Reason for Contact cleared - text field, dropdown, and errors cleared');
+                            }}
+                            className={`${theme.accent} ${theme.primaryHover} text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed transition-colors`}
+                          >
+                            {t('clearSelection')}
+                          </button>
+                        )}
+                      </div>
                     </div>
 
                     <div className="space-y-3 sm:space-y-4">
@@ -4892,33 +5063,7 @@ const handleContinueToBooking = async () => {
                         </div>
                       )}
 
-                      {/* Clear Selection button - positioned on the right */}
-                      {formData.reasonForContact && Array.isArray(formData.reasonForContact) && formData.reasonForContact.length > 0 && (
-                        <div className="flex justify-end mt-2 mb-2">
-                          <button
-                            type="button"
-                            onClick={() => {
-                              setFormData(prev => ({ ...prev, reasonForContact: [] }));
-                              setReasonTextSearch('');
-                              // Clear validation errors for reason for consultation
-                              setValidationErrors(prev => ({
-                                ...prev,
-                                reasonForContact: undefined
-                              }));
-                              // Reset complaint-related states when clearing selection
-                              setIsEmergencyOrUrgent(false);
-                              setPriorityMessage('');
-                              setPriorityMessageColor('');
-                              setSelectedComplaint(null);
-                              console.log('🔄 Reason for Contact cleared - text field, dropdown, and errors cleared');
-                            }}
-                            // disabled={isEmergencyOrUrgent || isLoadingDropdowns}
-                            className={`${theme.accent} ${theme.primaryHover} text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed transition-colors`}
-                          >
-                            Clear Selection
-                          </button>
-                        </div>
-                      )}
+
 
                       {/* Dropdown Selection */}
                       <SearchableDropdown
@@ -4971,9 +5116,9 @@ const handleContinueToBooking = async () => {
 
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                       <div>
-                        <Label htmlFor="firstName" className="text-sm font-medium">
+                        <label htmlFor="firstName" className="block text-sm font-medium text-gray-700 mb-2">
                           First Name <span className="text-red-500">*</span>
-                        </Label>
+                        </label>
                         <Input
                           id="firstName"
                           type="text"
@@ -4991,9 +5136,9 @@ const handleContinueToBooking = async () => {
                         )}
                       </div>
                       <div>
-                        <Label htmlFor="lastName" className="text-sm font-medium">
+                        <label htmlFor="lastName" className="block text-sm font-medium text-gray-700 mb-2">
                           Last Name <span className="text-red-500">*</span>
-                        </Label>
+                        </label>
                         <Input
                           id="lastName"
                           type="text"
@@ -5239,6 +5384,7 @@ const handleContinueToBooking = async () => {
                           placeholder="Enter your phone number"
                           required={true}
                           className="w-full"
+                          themeColor={getThemeFocusColor()}
                         />
                       </div>
                       <div className="w-full">

@@ -93,7 +93,7 @@ const PhoneNumberInput = ({
   placeholder = "Enter phone number",
   className = "",
   required = false,
-  focusColor = "blue"
+  themeColor = "teal" // Use theme color instead of hardcoded focusColor
 }) => {
   const [selectedCountry, setSelectedCountry] = useState('IE'); // Default to Ireland
   const [phoneNumber, setPhoneNumber] = useState('');
@@ -228,9 +228,9 @@ const PhoneNumberInput = ({
               type="button"
               onClick={() => setIsDropdownOpen(!isDropdownOpen)}
               disabled={disabled}
-              className={`flex items-center justify-between px-2 sm:px-3 py-3 border border-r-0 rounded-l-lg bg-white hover:bg-gray-50 focus:ring-2 focus:ring-${focusColor}-500 focus:border-${focusColor}-500 transition-all h-[48px] w-auto min-w-[120px] sm:min-w-[140px] ${
+              className={`flex items-center justify-between px-2 sm:px-3 py-3 border border-r-0 rounded-l-lg bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-${themeColor}-500 focus:border-${themeColor}-500 transition-all h-[48px] w-auto min-w-[120px] sm:min-w-[140px] ${
                 disabled ? 'bg-gray-100 cursor-not-allowed' : 'cursor-pointer'
-              } ${displayError ? 'border-red-500' : `border-${focusColor}-300`}`}
+              } ${displayError ? 'border-red-500' : `border-${themeColor}-300`}`}
             >
               <div className="flex items-center space-x-1 overflow-hidden">
                 <span className="text-xs sm:text-sm font-medium text-gray-700 truncate">
@@ -255,7 +255,7 @@ const PhoneNumberInput = ({
                       placeholder="Search countries..."
                       value={searchTerm}
                       onChange={(e) => setSearchTerm(e.target.value)}
-                      className={`w-full pl-9 pr-3 py-2.5 border border-${focusColor}-300 rounded-md focus:ring-2 focus:ring-${focusColor}-500 focus:border-${focusColor}-500 text-sm`}
+                      className={`w-full pl-9 pr-3 py-2.5 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-${themeColor}-500 focus:border-${themeColor}-500 text-sm`}
                     />
                   </div>
                 </div>
@@ -268,7 +268,7 @@ const PhoneNumberInput = ({
                         key={country.code}
                         type="button"
                         onClick={() => handleCountrySelect(country)}
-                        className="w-full flex items-center justify-between px-4 py-3 hover:bg-gray-50 focus:bg-gray-50 text-left transition-colors border-b border-gray-50 last:border-b-0"
+                        className={`w-full flex items-center justify-between px-4 py-3 hover:bg-gray-50 focus:outline-none focus:bg-${themeColor}-50 text-left transition-colors border-b border-gray-50 last:border-b-0`}
                       >
                         <span className="flex-1 text-sm text-gray-900 truncate pr-2">{country.name}</span>
                         <span className="text-sm text-gray-500 flex-shrink-0">{country.callingCode}</span>
@@ -293,9 +293,9 @@ const PhoneNumberInput = ({
           placeholder={placeholder}
           disabled={disabled}
           required={required}
-          className={`flex-1 w-full px-3 py-3 border rounded-r-lg focus:ring-2 focus:ring-${focusColor}-500 focus:border-${focusColor}-500 transition-all text-sm sm:text-base h-[48px] ${
+          className={`flex-1 w-full px-3 py-3 border rounded-r-lg focus:outline-none focus:ring-2 focus:ring-${themeColor}-500 focus:border-${themeColor}-500 transition-all text-sm sm:text-base h-[48px] ${
             disabled ? 'bg-gray-100 cursor-not-allowed' : ''
-          } ${displayError ? 'border-red-500 bg-red-50' : `border-${focusColor}-300`}`}
+          } ${displayError ? 'border-red-500 bg-red-50' : `border-${themeColor}-300`}`}
         />
       </div>
 

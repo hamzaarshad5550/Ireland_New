@@ -348,5 +348,49 @@ select {
   animation-delay: 1.2s;
 }
 
+/* Orbiting Animation Enhancements */
+@keyframes orbitFloat {
+  0%, 100% { transform: translateY(0px) scale(1); }
+  50% { transform: translateY(-10px) scale(1.05); }
+}
+
+@keyframes pulseGlow {
+  0%, 100% {
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 0 0 0 rgba(59, 130, 246, 0);
+  }
+  50% {
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 0 20px 5px rgba(59, 130, 246, 0.1);
+  }
+}
+
+/* Smooth orbiting elements */
+.orbit-element {
+  will-change: transform;
+  backface-visibility: hidden;
+  perspective: 1000px;
+}
+
+/* Enhanced mobile responsiveness for orbiting elements */
+@media (max-width: 640px) {
+  .orbit-container {
+    transform: scale(0.9);
+  }
+
+  .orbit-element {
+    transform: scale(0.85);
+  }
+}
+
+/* Reduce motion for users who prefer it */
+@media (prefers-reduced-motion: reduce) {
+  .orbit-element {
+    animation-duration: 60s !important;
+  }
+
+  .orbit-container {
+    animation-duration: 60s !important;
+  }
+}
+
 
 

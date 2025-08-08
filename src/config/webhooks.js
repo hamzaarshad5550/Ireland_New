@@ -76,6 +76,7 @@ const createDynamicWebhookConfig = () => {
     LOOKUPS_WEBHOOK: webhookUrl,
     TREATMENT_CENTRES_WEBHOOK: webhookUrl,
     PATIENT_REGISTRATION_WEBHOOK: webhookUrl,
+    APPOINTMENT_WEBHOOK: webhookUrl,
 
     // Centralized API endpoints
     PATIENT_INFO_API: `${envConfig.API_BASE_URL}/AppBooking/GetPatientInfoPreReqs`,
