@@ -38,7 +38,7 @@ const ENVIRONMENT_CONFIG = {
   local: {
     N8N_BASE_URL: 'https://local-n8n.vitonta.com',
     WEBHOOK_PATH: '/webhook/115d0f35-6f15-4b38-9697-a702343ceccd',
-    API_BASE_URL: 'https://ooh_web.vitonta.com'
+    API_BASE_URL: 'https://localhost:44360' //'https://ooh_web.vitonta.com'
   },
   production: {
     N8N_BASE_URL: 'https://demo-ooh-n8n.vitonta.com',
@@ -48,7 +48,7 @@ const ENVIRONMENT_CONFIG = {
   staging: {
     N8N_BASE_URL: 'https://demo-ooh-n8n.vitonta.com',
     WEBHOOK_PATH: '/webhook/115d0f35-6f15-4b38-9697-a702343ceccd',
-   API_BASE_URL: 'https://ooh_web.vitonta.com'
+    API_BASE_URL: 'https://ooh_web.vitonta.com'
   }
 };
 
@@ -80,6 +80,10 @@ const createDynamicWebhookConfig = () => {
 
     // Centralized API endpoints
     PATIENT_INFO_API: `${envConfig.API_BASE_URL}/AppBooking/GetPatientInfoPreReqs`,
+    VIDEO_TOKEN_API: `${envConfig.API_BASE_URL}/api/video/token`,
+
+    // NEW: Backend base URL (for SignalR / chathub, etc.)
+    BACKEND_BASE_URL: envConfig.API_BASE_URL,
 
     // Environment info
     CURRENT_ENVIRONMENT: detectEnvironment(),
@@ -116,7 +120,8 @@ export const getEnvironmentInfo = () => {
     current: WEBHOOK_CONFIG.CURRENT_ENVIRONMENT,
     config: WEBHOOK_CONFIG.ENVIRONMENT_CONFIG,
     webhookUrl: WEBHOOK_CONFIG.LOOKUPS_WEBHOOK,
-    apiUrl: WEBHOOK_CONFIG.PATIENT_INFO_API
+    apiUrl: WEBHOOK_CONFIG.PATIENT_INFO_API,
+    backendUrl: WEBHOOK_CONFIG.BACKEND_BASE_URL
   };
 };
 
@@ -137,6 +142,8 @@ export const setEnvironmentOverride = (environment) => {
   WEBHOOK_CONFIG.TREATMENT_CENTRES_WEBHOOK = webhookUrl;
   WEBHOOK_CONFIG.PATIENT_REGISTRATION_WEBHOOK = webhookUrl;
   WEBHOOK_CONFIG.PATIENT_INFO_API = `${envConfig.API_BASE_URL}/AppBooking/GetPatientInfoPreReqs`;
+  WEBHOOK_CONFIG.VIDEO_TOKEN_API = `${envConfig.API_BASE_URL}/api/video/token`;
+  WEBHOOK_CONFIG.BACKEND_BASE_URL = envConfig.API_BASE_URL; // ✅ ensure override updates backend base
   WEBHOOK_CONFIG.CURRENT_ENVIRONMENT = environment;
   WEBHOOK_CONFIG.ENVIRONMENT_CONFIG = envConfig;
 
@@ -223,13 +230,7 @@ export const logCurrentConfiguration = () => {
   console.log('N8N Base URL:', WEBHOOK_CONFIG.ENVIRONMENT_CONFIG.N8N_BASE_URL);
   console.log('Webhook URL:', WEBHOOK_CONFIG.LOOKUPS_WEBHOOK);
   console.log('API URL:', WEBHOOK_CONFIG.PATIENT_INFO_API);
+  console.log('Backend URL:', WEBHOOK_CONFIG.BACKEND_BASE_URL);
   console.log('Full Config:', WEBHOOK_CONFIG.ENVIRONMENT_CONFIG);
   console.groupEnd();
 };
-
-
-
-
-
-
-

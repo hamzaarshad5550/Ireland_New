@@ -2090,6 +2090,33 @@ export default function CareHQBooking() {
     try {
       console.log('📧 Sending confirmation emails for booking:', bookingData);
 
+       // Generate dynamic video URLs based on AppointmentID and PatientID
+      const appointmentID = bookingData.AppointmentID || reservedAppointment?.AppointmentID || 0;
+      const currentPatientID = patientID || bookingData.PatientID || 0;
+
+      // Get current domain for video URLs
+      const currentDomain = window.location.origin;
+      const roomName = `room-visit-${appointmentID}`;
+      
+      const patientIdentity = `patient_${currentPatientID}`;
+      const practiceIdentity = `practice_${bookingData.PracticeID || '0'}`; // ensure PracticeID is available
+
+      const practiceVideoURL = `${currentDomain}/practice-call/${roomName}?identity=${practiceIdentity}`;
+      const patientVideoURL = `${currentDomain}/video-call/${roomName}?identity=${patientIdentity}`;
+
+      // // Generate dynamic video URLs
+      // const practiceVideoURL = `${currentDomain}/practice-call/${roomName}`;
+      // const patientVideoURL = `${currentDomain}/video-call/${roomName}`;
+
+      console.log('🎥 Generated video URLs:', {
+        appointmentID,
+        patientID: currentPatientID,
+        roomName,
+        practiceVideoURL,
+        patientVideoURL
+      });
+
+
       // Extract data from the booking response
       const confirmationPayload = {
         "workflowtype": "send_confirmation_emails",
@@ -2098,16 +2125,18 @@ export default function CareHQBooking() {
         "ContactNo": bookingData.ContactNo || formData.phoneNumber || "",
         "Email": bookingData.Email || formData.email || "",
         "CaseNo": bookingData.CaseNo || "",
-        "AppointmentID": bookingData.AppointmentID || 0,
+        "AppointmentID": appointmentID,
+        "PatientID": currentPatientID,
         "AppointmentType": bookingData.AppointmentType || (formData.appointmentType === "1" ? "Video Consult" : "Face 2 Face"),
         "Price": bookingData.Price || paymentAmount || 0,
-        "practiceVideoURL": bookingData.practiceVideoURL || "https://www.meetingvideourlpractice.com",
+        "practiceVideoURL": practiceVideoURL ,
         "TrCentreAddress": bookingData.TrCentreAddress || selectedClinic?.address || "",
         "TrCentreLatitude": bookingData.TrCentreLatitude || selectedClinic?.latitude || "",
         "TrCentreLongitude": bookingData.TrCentreLongitude || selectedClinic?.longitude || "",
         "StartTime": bookingData.StartTime || reservedAppointment?.StartTime || "",
         "EndTime": bookingData.EndTime || reservedAppointment?.EndTime || "",
-        "patientVideoURL": bookingData.patientVideoURL || "https://www.meetingvideourlpatient.com"
+        "patientVideoURL": patientVideoURL,
+        "roomName": roomName
       };
 
       console.log('📤 Confirmation email payload:', confirmationPayload);
